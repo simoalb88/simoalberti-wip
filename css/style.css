@@ -561,12 +561,14 @@ body.nav-on-dark .nav-links .nav-disabled { color: rgba(235, 231, 212, 0.35); }
 .frame {
   position: absolute;
   /* Anchored to the BOTTOM edge of the tile so the portrait's chest/shoulders
-     always sit flush with the tile bottom — never showing a gap below. */
+     always sit flush with the tile bottom — never showing a gap below.
+     Size driven by container HEIGHT (cqh) so the portrait fills the tile
+     vertically across every aspect ratio. On landscape this is ~same as the
+     old cqmin behavior; on portrait the frame grows past tile width and the
+     shoulders crop cleanly via .stage-scale's overflow:hidden. */
   left: 50%; bottom: 0;
-  width: 85cqmin;
+  width: 85cqh;
   aspect-ratio: 1400 / 1239;
-  max-width: 92cqw;
-  max-height: 100cqh;
   transform:
     translateX(-50%)
     perspective(1300px)
@@ -684,14 +686,17 @@ body.nav-on-dark .nav-links .nav-disabled { color: rgba(235, 231, 212, 0.35); }
 /* The wireframe glasses graphic — positioned at eye-level in hero state */
 .wf-glasses {
   position: absolute;
-  /* Track the bottom-anchored portrait. Eye position is roughly 45% down
-     from the top of the portrait → ~41cqmin above the tile bottom. */
+  /* Track the bottom-anchored portrait. Eye position is roughly at
+     ~42cqh above the tile bottom on the rendered image. Using cqh
+     (same unit family as .frame) so the glasses stay locked to the
+     face across every aspect ratio. */
   left: 50.8%;
   top: auto;
-  bottom: 42cqmin;
+  bottom: 42cqh;
   transform: translate(-50%, 50%);
-  /* Sized off the TILE so the glasses shrink with the scene */
-  width: 30cqmin;
+  /* Sized off the TILE height so the glasses shrink with the scene
+     AND stay proportional to the portrait at every aspect ratio. */
+  width: 30cqh;
   aspect-ratio: 1000 / 339;
   background: #2a3220;
   -webkit-mask-image: url(../img/mrbd-wireframe.png);
@@ -772,35 +777,12 @@ body.nav-on-dark .nav-links .nav-disabled { color: rgba(235, 231, 212, 0.35); }
   .stage-text { font-size: 28px; width: 92vw; left: 4vw; transform: translateY(0); top: auto; bottom: 60px; }
 }
 
-/* === Portrait phones: bigger portrait + better end-state composition ===
-   In tall portrait aspect ratios (most phones), the cqmin-driven frame
-   shrinks proportionally to viewport width — leaving the portrait small
-   and floating low. Here we:
-     1) Size the frame by container HEIGHT instead of min-axis, so the
-        face stays prominent. Sides/shoulders crop off-screen if needed
-        (overflow:hidden on .stage-scale clips cleanly).
-     2) Re-balance the end-state: push the shrunken tile DOWN with more
-        headroom above, less gap below, and grow the manifesto text. */
+/* === Portrait phones: end-state composition only ===
+   Frame + wireframe scaling is handled by the universal cqh-based rules
+   above and works correctly across all aspect ratios. The only thing
+   that's genuinely portrait-specific is the end-state layout: where the
+   shrunken tile lands and how the manifesto text sits beside vs below. */
 @media (orientation: portrait) and (max-width: 900px) {
-  .frame {
-    /* Oversize the frame relative to tile WIDTH so the portrait fills the
-       viewport vertically. Keep the SAME aspect-ratio as desktop (1400/1239)
-       so the image is cropped at the shoulders, NOT showing more chest.
-       The natural-aspect <img> still extends past the frame's bottom and
-       gets clipped by .stage-scale's overflow:hidden — same trick as
-       desktop, just at a larger size. */
-    width: 140cqw;
-    aspect-ratio: 1400 / 1239;
-    max-width: none;
-    max-height: none;
-  }
-  /* Wireframe glasses: width ~ 30% of frame width = 42cqw.
-     Eye-line at ~38% above tile bottom at this sizing. */
-  .wf-glasses {
-    width: 42cqw;
-    bottom: 38cqh;
-  }
-
   /* End-state re-balance: tile smaller, lower, more text below. */
   .stage-scale {
     top:    calc(var(--p) * 16vh);   /* big headroom above the tile */
