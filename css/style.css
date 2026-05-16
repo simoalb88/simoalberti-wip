@@ -1,0 +1,2540 @@
+:root {
+  /* PUNCHY palette (Lando-leaning) used everywhere EXCEPT Stage + About,
+     which keep the warmer originals via section-scoped overrides below. */
+  --bg-dark: #0a0c08;        /* near-pure black with a hint of green */
+  --bg-light: #f1ede0;       /* cleaner off-white, less beige */
+  --bg: var(--bg-dark);
+  --bg-elev: #15170f;        /* card fill on dark — slightly elevated */
+  --fg: #f1ede0;
+  --muted: #8c8b7a;
+  --line: #2a2d22;
+  --accent: #d8ff26;         /* one punchy lime — big decorative type only */
+  --accent-2: #b4d619;
+  --accent-soft: rgba(216, 255, 38, 0.12);
+  /* Body italic accents (small text in paragraphs) — on dark theme,
+     same as the punchy accent. On light, overridden to a muted warm
+     gray for readability (matches the Lando OFF TRACK body style). */
+  --accent-body: var(--accent);
+  /* Warm originals available to opt-in for Stage + About */
+  --bg-dark-warm: #1d2218;
+  --bg-light-warm: #ede8d8;
+  --maxw: 1200px;
+  --radius: 18px;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-display: "Bricolage Grotesque", "Inter", sans-serif;
+  /* Fraunces — variable serif with strong display contrast and a dramatic italic */
+  --font-serif: "Fraunces", "Times New Roman", serif;
+}
+
+/* light section override — uses the SAME punchy lime (consistent
+   accent across the whole site). Body text is the dark color so accent
+   is mostly for highlights/borders/decoration, not body copy. */
+.theme-light {
+  --bg: var(--bg-light);
+  --bg-elev: #e6e1ce;
+  --fg: #0a0c08;
+  --muted: #5a5d4c;
+  --line: #d3ceb7;
+  --accent: #d8ff26;
+  --accent-soft: rgba(216, 255, 38, 0.18);
+  /* Body italic accents on light theme = warm muted gray, NOT yellow.
+     Big decorative type (headlines, .accent in big-headline / hh-title
+     / cb-title / coda-text / hp-title / ph-title) keeps the punchy lime
+     via direct --accent reference. */
+  --accent-body: #757062;
+}
+/* Stage + About preserve their warmer original palette */
+.stage,
+.stage::before,
+#about {
+  --bg-dark: var(--bg-dark-warm);
+}
+#about {
+  --bg-light: var(--bg-light-warm);
+  --bg-elev: #e3ddc7;
+  --fg: #1d2218;
+  --muted: #5d6253;
+  --line: #cec7ad;
+}
+
+/* ====== Loader ====== */
+.loader {
+  position: fixed; inset: 0; z-index: 10000;
+  background: var(--bg-dark);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+}
+.loader.done { transform: translateY(-100%); }
+.loader-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.88;
+  color: var(--fg);
+}
+.loader-lockup .ll-1,
+.loader-lockup .ll-2 {
+  display: flex;
+  overflow: hidden;
+  line-height: 1;
+}
+/* "SIMO" — italic Fraunces serif, big */
+.loader-lockup .ll-1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  font-size: clamp(64px, 11vw, 140px);
+  letter-spacing: 0;
+  color: var(--fg);
+}
+/* "ALBERTI" — bold sans, narrower, set below SIMO so widths match visually */
+.loader-lockup .ll-2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 85%;
+  font-size: clamp(36px, 6vw, 80px);
+  letter-spacing: 0.06em;
+  color: var(--fg);
+  margin-top: 6px;
+}
+.loader-lockup .ch {
+  display: inline-block;
+  transform: translateY(110%);
+  animation: chIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes chIn { to { transform: translateY(0); } }
+.loader-bar {
+  position: absolute; bottom: 0; left: 0;
+  height: 2px; width: 0%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  animation: loaderBar 1.4s 0.15s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+@keyframes loaderBar { to { width: 100%; } }
+/* prevent hero animations from starting until loader is gone */
+.is-loading { overflow: hidden; }
+.is-loading .hero h1 .word > span,
+.is-loading .hero .tagline,
+.is-loading .hero .cta-row,
+.is-loading .hero-photo { animation-play-state: paused; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  cursor: none;
+}
+html { overflow-x: clip; }
+@media (max-width: 900px) { body { cursor: auto; } }
+
+a { color: var(--fg); text-decoration: none; }
+a:hover { color: var(--accent); }
+
+.container { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; position: relative; }
+
+/* Ambient blobs killed — uniform backgrounds per user request */
+.section-ambient, .blob { display: none !important; }
+
+/* ====== Topographical contour layer ====== */
+/* Lives inside a positioned ancestor (.stage-scale on home, .hero on
+   work/projects) and absolute-fills it. */
+.topo-bg {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+}
+.topo-bg svg { width: 100%; height: 100%; display: block; }
+.topo-bg path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.1;
+  vector-effect: non-scaling-stroke;
+}
+.theme-light .topo-bg path { stroke: #6a7250; }
+/* Stage keeps the original mellow lime topo stroke (matches the warm
+   cream + olive vibe that was working before the punchier global). */
+.stage .topo-bg path { stroke: #cce046; }
+#topo-a, #topo-b { transform-box: fill-box; }
+#topo-a { animation: topoDriftA 14s ease-in-out infinite alternate; transform-origin: 350px 380px; }
+#topo-b { animation: topoDriftB 18s ease-in-out infinite alternate; transform-origin: 1280px 640px; }
+@keyframes topoDriftA {
+  0%   { transform: translate(-30px, 20px) scale(1) rotate(-2deg); }
+  100% { transform: translate(80px, -50px) scale(1.12) rotate(4deg); }
+}
+@keyframes topoDriftB {
+  0%   { transform: translate(40px, -20px) scale(1.04) rotate(2deg); }
+  100% { transform: translate(-90px, 60px) scale(1.0) rotate(-4deg); }
+}
+
+/* Make section content sit above topo + ambient */
+.hero .container,
+section > .container,
+.nav .container,
+footer .container { position: relative; z-index: 2; }
+section, .hero { overflow: hidden; }
+
+/* Film grain */
+.grain {
+  position: fixed; inset: -50%;
+  z-index: -1; pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+  opacity: 0.06; mix-blend-mode: overlay;
+  animation: grainShift 8s steps(8) infinite;
+}
+@keyframes grainShift {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-3%, -2%); }
+  20%  { transform: translate(2%, 3%); }
+  30%  { transform: translate(-1%, 4%); }
+  40%  { transform: translate(3%, -3%); }
+  50%  { transform: translate(-2%, 2%); }
+  60%  { transform: translate(4%, -1%); }
+  70%  { transform: translate(-3%, -3%); }
+  80%  { transform: translate(2%, 4%); }
+  90%  { transform: translate(-4%, 1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ====== Custom cursor ====== */
+.cursor-dot, .cursor-ring {
+  position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 9999;
+  transform: translate3d(-50%, -50%, 0);
+  mix-blend-mode: difference;
+}
+.cursor-dot {
+  width: 6px; height: 6px; background: #fff; border-radius: 50%;
+  transition: opacity 0.2s;
+}
+.cursor-ring {
+  width: 38px; height: 38px; border: 1px solid #fff; border-radius: 50%;
+  transition: width 0.25s, height 0.25s, opacity 0.25s, border-color 0.25s;
+}
+.cursor-ring.hover { width: 64px; height: 64px; border-color: var(--accent); }
+
+/* ====== Scroll progress ====== */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  z-index: 200;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+/* ====== Nav ====== */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: transparent;
+  border: none;
+  pointer-events: none;          /* let underlying clicks pass except on links */
+}
+.nav-inner {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 28px 36px 0 36px;
+  pointer-events: none;
+}
+.nav-inner > * { pointer-events: auto; }
+
+/* Stacked logo: SIMO bold sans, Alberti italic serif */
+.nav-brand {
+  font-family: var(--font-display);
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+  gap: 0;
+  text-decoration: none;
+}
+/* Lock-up: SIMO upright Fraunces caps (matches the dramatic serif used in
+   the manifesto), ALBERTI bold sans caps below. Both lines occupy the
+   same horizontal width. */
+.nav-brand .b-1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;        /* matches the manifesto serif look */
+  /* Sized so the visible ink of "SIMO" matches "ALBERTI" — italic
+     glyphs have side-bearing whitespace, so the box must be wider
+     than ALBERTI by ~0.1em to make the ink visually match. */
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--brand-color, #1a1f15);
+}
+.nav-brand .b-2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 85%;
+  font-size: 20px;
+  line-height: 1;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brand-color, #1a1f15);
+}
+/* When scrolled into dark territory, flip logo + links to light cream */
+body.nav-on-dark {
+  --brand-color: #ebe7d4;
+}
+body.nav-on-dark .nav-links a { color: rgba(235, 231, 212, 0.7); }
+body.nav-on-dark .nav-links a:hover,
+body.nav-on-dark .nav-links a.active { color: #ebe7d4; }
+/* (no .dot needed in new design — kept for backward compat below) */
+.nav-brand .dot { display: none; }
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.4); opacity: 0.6; }
+}
+.nav-links { display: flex; gap: 28px; align-items: center; margin-top: 6px; }
+.nav-links a {
+  font-size: 12px; color: rgba(26, 31, 21, 0.7);
+  position: relative;
+  transition: color 0.2s; letter-spacing: 0.18em;
+  text-transform: uppercase; font-weight: 600;
+}
+.nav-links a:hover, .nav-links a.active { color: #1a1f15; }
+.nav-links .nav-disabled {
+  font-size: 12px; color: rgba(26, 31, 21, 0.35);
+  letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
+  cursor: not-allowed; user-select: none; pointer-events: none;
+  position: relative;
+}
+.nav-links .nav-disabled::after {
+  content: "soon"; position: absolute; left: 50%; bottom: -10px;
+  transform: translateX(-50%);
+  font-size: 7px; letter-spacing: 0.2em; color: var(--accent);
+  opacity: 0.7;
+}
+body.nav-on-dark .nav-links .nav-disabled { color: rgba(235, 231, 212, 0.35); }
+.nav-links a.active::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -8px;
+  height: 2px; background: var(--accent);
+}
+
+/* ====== Hero ====== */
+.hero {
+  padding: 100px 0 80px;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+}
+.hero.theme-light { background: var(--bg-light); color: #1a1a22; }
+.hero.theme-light .nav-brand .dot { background: var(--accent); }
+.hero-split {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--bg-dark); font-weight: 700;
+  padding: 8px 16px 8px 14px;
+  background: var(--accent);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  margin-bottom: 28px;
+}
+.eyebrow .live-dot { background: var(--bg-dark) !important; box-shadow: none !important; }
+.eyebrow .live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 8px var(--accent);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(64px, 11vw, 170px);
+  line-height: 0.88; margin: 0 0 32px;
+  letter-spacing: -0.045em; font-weight: 800;
+  font-stretch: 80%;
+}
+.hero h1 .accent {
+  font-style: italic;
+  font-stretch: 90%;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  font-family: var(--font-serif);
+}
+.hero h1 .accent {
+  color: var(--accent);
+}
+.hero h1 .word {
+  display: inline-block; overflow: hidden; vertical-align: top;
+}
+.hero h1 .word > span {
+  display: inline-block;
+  transform: translateY(110%);
+  animation: slideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.hero h1 .word > span.d1 { animation-delay: 0.1s; }
+.hero h1 .word > span.d2 { animation-delay: 0.25s; }
+@keyframes slideUp { to { transform: translateY(0); } }
+
+.hero .tagline {
+  font-size: clamp(18px, 1.6vw, 22px);
+  color: var(--muted); max-width: 560px; margin: 0 0 40px;
+  opacity: 0; animation: fadeUp 0.9s 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.hero .tagline em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  color: var(--fg);
+  letter-spacing: -0.005em;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cta-row {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp 0.9s 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+/* Buttons — clipped-corner boxes, not pills */
+.btn {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 26px 14px 22px;
+  font-size: 13px; font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  transition: filter 0.25s, transform 0.25s, color 0.25s, background 0.25s;
+  will-change: transform;
+}
+.btn-primary {
+  background: var(--accent); color: var(--bg-dark); border-color: var(--accent);
+}
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-ghost { background: transparent; color: var(--accent); }
+.btn-ghost:hover { background: var(--accent); color: var(--bg-dark); }
+
+.hero-photo {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0; animation: photoIn 1s 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes photoIn {
+  from { opacity: 0; transform: scale(0.96) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.hero-photo img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  display: block;
+  transition: transform 0.6s ease;
+}
+/* ===== AR wireframe glasses overlay (PNG mask + solid fill + scan reveal) ===== */
+.hero-photo .glasses-overlay {
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  transform: translate(-50%, -50%);
+  width: 78%;
+  pointer-events: none;
+  /* Wireframe is revealed by a top-to-bottom scan, holds, then erased
+     by a second top-to-bottom scan. */
+  clip-path: inset(0 0 100% 0);
+  animation: scanReveal 4.5s 1.3s cubic-bezier(0.4, 0.0, 0.4, 1.0) forwards;
+}
+/* Wireframe rendered as solid-colored mask of the PNG */
+.hero-photo .glasses-overlay .gl {
+  width: 100%;
+  aspect-ratio: 1000 / 339;
+  background: var(--accent);
+  -webkit-mask-image: url(../img/mrbd-wireframe.png);
+          mask-image: url(../img/mrbd-wireframe.png);
+  -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  filter: drop-shadow(0 0 8px rgba(204, 224, 70, 0.5));
+}
+.theme-light .hero-photo .glasses-overlay .gl {
+  background: #2a3220;
+  filter: none;
+  opacity: 0.7;
+}
+/* Glowing scan bar that travels down — runs twice (reveal pass + erase pass) */
+.hero-photo .glasses-overlay::after {
+  content: "";
+  position: absolute;
+  left: -6%; right: -6%;
+  top: 0;
+  height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent), 0 0 28px var(--accent);
+  opacity: 0;
+  animation: scanBar 4.5s 1.3s cubic-bezier(0.4, 0.0, 0.4, 1.0) forwards;
+  z-index: 2;
+}
+@keyframes scanReveal {
+  0%   { clip-path: inset(0 0 100% 0); }     /* fully hidden */
+  30%  { clip-path: inset(0 0 0 0); }        /* fully revealed by reveal-scan */
+  55%  { clip-path: inset(0 0 0 0); }        /* hold */
+  100% { clip-path: inset(100% 0 0 0); }     /* erased by erase-scan */
+}
+@keyframes scanBar {
+  0%   { top: -8%;   opacity: 0; }
+  6%   { opacity: 1; }
+  28%  { top: 104%;  opacity: 1; }
+  31%  { top: 104%;  opacity: 0; }           /* reveal pass done */
+  55%  { top: -8%;   opacity: 0; }           /* invisibly reset to top */
+  58%  { top: -8%;   opacity: 1; }           /* start erase pass */
+  100% { top: 104%;  opacity: 0; }
+}
+
+/* spin retained for any star utility */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ====== STAGE: unified hero → manifesto choreography ====== */
+.stage {
+  position: relative;
+  height: 320vh;                /* total scroll runway */
+  /* Dark page color shows around the scaling tile */
+  background: var(--bg-dark);
+  color: var(--fg);
+  overflow: visible;
+  /* Override the catch-all `section { padding: 120px 0 }` rule below — the
+     stage-pin must start at viewport top so the tile fills the whole viewport. */
+  padding: 0;
+  /* progress 0 → 1 (lerped in JS for momentum) */
+  --p: 0;
+  --raw: 0;
+}
+.stage-pin {
+  position: sticky; top: 0;
+  height: 100vh;
+  overflow: visible;
+  z-index: 10;
+}
+
+/* ===== Scaling tile: everything inside scales as one scene =====
+   At p=0 the tile fills the viewport (top:0 right:0 bottom:0 left:0).
+   At p=1 it pulls inward to a ~44vw × 84vh card anchored to the left.
+   Children scale with the tile via container-query units (cqmin etc). */
+.stage-scale {
+  position: absolute;
+  /* End tile at p=1: ~38vw × 72vh, vertically centered with breathing room
+     above (clears the nav) and below. Anchored toward the left. */
+  top:    calc(var(--p) * 14vh);
+  bottom: calc(var(--p) * 14vh);
+  left:   calc(var(--p) * 5vw);
+  right:  calc(var(--p) * 57vw);
+  overflow: hidden;           /* crops topo + wireframe to tile edges */
+  border-radius: calc(var(--p) * 14px);
+  will-change: top, right, bottom, left, border-radius;
+  z-index: 1;
+  container-type: size;       /* enable cqmin/cqw/cqh for descendants */
+}
+
+/* Cream backdrop — the bottom of the tile */
+.stage-bg {
+  position: absolute; inset: 0;
+  background: var(--bg-light);
+  z-index: 0;
+}
+
+/* The portrait frame: fixed size, centered in the tile.
+   Tilt (perspective + rotateX/Y) is driven by cursor anywhere on .stage-pin. */
+.frame {
+  position: absolute;
+  /* Anchored to the BOTTOM edge of the tile so the portrait's chest/shoulders
+     always sit flush with the tile bottom — never showing a gap below. */
+  left: 50%; bottom: 0;
+  width: 85cqmin;
+  aspect-ratio: 1400 / 1239;
+  max-width: 92cqw;
+  max-height: 100cqh;
+  transform:
+    translateX(-50%)
+    perspective(1300px)
+    rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  z-index: 6;
+  will-change: transform;
+}
+.frame-inner {
+  position: relative;
+  width: 100%; height: 100%;
+  /* overflow VISIBLE so the natural-aspect image can extend below the
+     frame box. stage-scale's overflow:hidden still clips the bottom edge
+     at the tile's bottom — but during tilt the rotation reveals more
+     body instead of a hard image cut line. */
+  overflow: visible;
+  border-radius: 4px;
+  background: transparent;
+}
+.frame-inner img {
+  /* Width-driven natural sizing so the image renders at its actual aspect
+     (1122×1402, taller than the frame). The bottom of the image extends
+     past the frame's box — stage-scale's overflow:hidden still clips the
+     visible edge at the tile's bottom, but during tilt the rotation
+     reveals more body instead of a hard image cut. No scaling. */
+  width: 100%;
+  height: auto;
+  display: block;
+  /* very subtle counter-translation for parallax inside the frame on tilt */
+  transform: translate(calc(var(--tilt-y, 0deg) * -0.3 * 1px), calc(var(--tilt-x, 0deg) * 0.3 * 1px));
+}
+
+/* AR brackets visible only once shrunk (fade in with progress) */
+.frame::before, .frame::after {
+  content: ""; position: absolute;
+  width: 22px; height: 22px;
+  border: 1px solid var(--accent);
+  opacity: calc(var(--p) * 1);
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.frame::before { top: -10px; left: -10px; border-right: none; border-bottom: none; }
+.frame::after  { bottom: -10px; right: -10px; border-left: none; border-top: none; }
+
+/* AR brackets visible only once shrunk (fade in with progress) */
+.frame::before, .frame::after {
+  content: ""; position: absolute;
+  width: 22px; height: 22px;
+  border: 1px solid var(--accent);
+  opacity: calc(var(--p) * 1);
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.frame::before { top: -10px; left: -10px; border-right: none; border-bottom: none; }
+.frame::after  { bottom: -10px; right: -10px; border-left: none; border-top: none; }
+
+/* ===== Wireframe overlay: revealed by the scan line, gradient fades after ===== */
+/* Math: wireframe sits at frame y 33% – 47% (height = 14% of frame).
+   Scan traverses full frame in one 2.4s cycle.
+   Fade tail length = half cycle = 50% of frame = 357% of wireframe height.
+   Mask: a soft transparent→opaque gradient (the fade tail) whose opaque
+   leading edge sits at the scan position, traveling linearly down.
+   We intersect this gradient with the wireframe-shape PNG so the lines
+   only show where BOTH the wireframe AND the trail are opaque. */
+/* ===== Stage-wide radar scan, visible only through wireframe shape =====
+   .wf fills the .stage-pin (100vh). A linear-gradient mask defines the radar:
+   long fade-tail (transparent at top of mask -> opaque at leading edge)
+   followed by a SHARP drop to transparent (the leading edge itself).
+   The mask slides downward so every Y in the Stage goes:
+     0% (not yet scanned) -> snap to 100% (leading edge passes)
+     -> slow decay back to 0% (trail fades out).
+   The .wf-glasses child applies the wireframe shape mask, so this radar
+   only shows on the wireframe geometry. */
+.wf {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Above the portrait (.frame z:6) so the wireframe paints over the face */
+  z-index: 7;
+
+  -webkit-mask-image: linear-gradient(to bottom,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0) 50%,
+    rgba(0,0,0,1) 99%,
+    rgba(0,0,0,0) 99%,
+    rgba(0,0,0,0) 100%
+  );
+          mask-image: linear-gradient(to bottom,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0) 50%,
+    rgba(0,0,0,1) 99%,
+    rgba(0,0,0,0) 99%,
+    rgba(0,0,0,0) 100%
+  );
+  -webkit-mask-size: 100% 100vh;
+          mask-size: 100% 100vh;
+  -webkit-mask-repeat: repeat-y;
+          mask-repeat: repeat-y;
+
+  /* Repeating mask: one tile = one viewport. As the mask slides down 1
+     viewport, the next leading edge enters the top exactly as the previous
+     exits the bottom. Sweep speed and period are now identical.
+       Sweep (top -> bottom)    : ~2.0s
+       Trail decay at any point : ~1.0s
+       Quiet time at any point  : ~1.0s
+       Period (top-to-top)      : 2.0s */
+  animation: wfRadarScan 2s linear infinite;
+}
+@keyframes wfRadarScan {
+  0%   { -webkit-mask-position: 0 0vh;   mask-position: 0 0vh; }
+  100% { -webkit-mask-position: 0 100vh; mask-position: 0 100vh; }
+}
+
+/* The wireframe glasses graphic — positioned at eye-level in hero state */
+.wf-glasses {
+  position: absolute;
+  /* Track the bottom-anchored portrait. Eye position is roughly 45% down
+     from the top of the portrait → ~41cqmin above the tile bottom. */
+  left: 50.8%;
+  top: auto;
+  bottom: 42cqmin;
+  transform: translate(-50%, 50%);
+  /* Sized off the TILE so the glasses shrink with the scene */
+  width: 30cqmin;
+  aspect-ratio: 1000 / 339;
+  background: #2a3220;
+  -webkit-mask-image: url(../img/mrbd-wireframe.png);
+          mask-image: url(../img/mrbd-wireframe.png);
+  -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+}
+/* Wireframe keeps its original olive color throughout the scale —
+   no color flip when the stage crosses into the dark phase. */
+
+/* ===== Manifesto text — appears as you scroll into the stage ===== */
+.stage-text {
+  position: absolute;
+  /* Sits in the right half once frame has shifted left */
+  left: 52%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(46vw, 720px);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 85%;
+  font-size: clamp(28px, 4.0vw, 64px);
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: var(--fg);
+  /* Only appears after the frame is mostly shrunk — never overlaps */
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+  z-index: 10;
+}
+.stage.dark .stage-text { opacity: 1; }
+.stage-text .hl {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  text-transform: none;
+  color: var(--accent);
+  font-stretch: 100%;
+  letter-spacing: -0.01em;
+}
+.stage-text .w {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.35em);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.stage-text .w.in { opacity: 1; transform: translateY(0); }
+
+/* "HUD" label at top of the stage */
+.stage-label {
+  position: absolute;
+  top: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--muted);
+  z-index: 10;
+  opacity: calc(1 - var(--p) * 0.6);
+  transition: color 0.4s;
+}
+.stage-label::before { content: "✦ "; color: var(--accent); }
+
+@media (max-width: 900px) {
+  .stage { height: 260vh; }
+  /* On narrow screens, shrink less and let the tile keep more width so
+     the manifesto stacks below instead of squeezing in beside it. */
+  .stage-scale {
+    top:    calc(var(--p) * 6vh);
+    bottom: calc(var(--p) * 40vh);   /* leave room for text below */
+    left:   calc(var(--p) * 4vw);
+    right:  calc(var(--p) * 4vw);
+  }
+  .stage-text { font-size: 28px; width: 92vw; left: 4vw; transform: translateY(0); top: auto; bottom: 60px; }
+}
+.manifesto-pin {
+  position: sticky; top: 0;
+  height: 100vh;
+  display: flex; align-items: center;
+  padding: 0 28px;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  gap: 56px;
+}
+.manifesto-photo {
+  flex: 0 0 auto;
+  width: clamp(140px, 22vw, 320px);
+  aspect-ratio: 4 / 5;
+  position: relative;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.manifesto-photo img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  display: block;
+}
+/* tiny corner marks around the small photo, AR-system style */
+.manifesto-photo::before,
+.manifesto-photo::after {
+  content: ""; position: absolute;
+  width: 18px; height: 18px;
+  border: 1px solid var(--accent);
+}
+.manifesto-photo::before { top: -8px; left: -8px; border-right: none; border-bottom: none; }
+.manifesto-photo::after  { bottom: -8px; right: -8px; border-left: none; border-top: none; }
+
+.manifesto-text {
+  flex: 1;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 85%;
+  font-size: clamp(28px, 4.4vw, 72px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.manifesto-text .hl {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  text-transform: none;
+  color: var(--accent);
+  font-stretch: 100%;
+  letter-spacing: -0.01em;
+}
+.manifesto-text .w {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.3em);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.manifesto-text .w.in { opacity: 1; transform: translateY(0); }
+.manifesto-label {
+  position: absolute; top: 32px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--muted);
+}
+.manifesto-label::before {
+  content: "✦";
+  display: inline-block;
+  color: var(--accent);
+  margin-right: 10px;
+  animation: spin 8s linear infinite;
+}
+@media (max-width: 900px) {
+  .manifesto-pin { flex-direction: column; gap: 32px; padding: 80px 24px; height: auto; min-height: 100vh; }
+  .manifesto-photo { width: 200px; }
+  .manifesto-text { font-size: 30px; }
+}
+
+/* ====== Themed sections + curved transitions ====== */
+.section {
+  background: var(--bg);
+  color: var(--fg);
+  position: relative;
+  padding: 140px 0;
+}
+.section + .section { margin-top: 0; }
+
+/* SVG wave divider between sections.
+   Wave element bg = color of section BELOW.
+   Path fill = color of section ABOVE — gives the illusion of one
+   section flowing into the next. */
+.wave {
+  display: block; width: 100%; height: 100px;
+  margin: -1px 0;
+  position: relative;
+  overflow: hidden;
+}
+.wave svg { display: block; width: 100%; height: 100%; }
+/* dark above → light below */
+.wave-down { background: var(--bg-light); }
+.wave-down svg path { fill: var(--bg-dark); }
+/* light above → dark below */
+.wave-up { background: var(--bg-dark); }
+.wave-up svg path { fill: var(--bg-light); }
+
+/* Light section accent token color (the magenta itself doesn't change) */
+.theme-light .section-title { color: var(--muted); }
+.theme-light .fact { background: transparent; }
+.theme-light .project { background: var(--bg-elev); }
+.theme-light .nav-brand,
+.theme-light .nav-links a.active { color: var(--fg); }
+.theme-light .contact-card {
+  background: linear-gradient(135deg, var(--bg-elev), rgba(255,46,136,0.06));
+}
+.theme-light .stats { background: var(--bg-elev); }
+.theme-light .btn-ghost { background: rgba(0,0,0,0.02); }
+
+/* ====== Sections ====== */
+section {
+  padding: 120px 0;
+  position: relative;
+  background: var(--bg);
+  color: var(--fg);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+.section-title {
+  font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 48px;
+  display: flex; align-items: center; gap: 16px;
+}
+.section-title .num {
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.section-title::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--line), transparent);
+}
+.section-heading {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 80px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.0;
+  margin: 0 0 48px;
+  font-stretch: 80%;
+}
+.section-heading .accent {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent);
+  font-stretch: 100%;
+  letter-spacing: -0.01em;
+}
+
+/* About */
+.about-grid {
+  display: grid; grid-template-columns: 1.3fr 1fr; gap: 80px;
+  align-items: start;
+}
+.about-grid p { font-size: 19px; color: var(--muted); margin: 0 0 20px; line-height: 1.65; }
+.about-grid p strong { color: var(--fg); font-weight: 600; }
+.about-grid p em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  color: var(--fg);
+  letter-spacing: -0.005em;
+}
+/* Facts — line-style entries with accent rule on the left, no card */
+.facts { display: grid; gap: 4px; align-content: start; }
+.fact {
+  padding: 18px 0 18px 20px;
+  border-left: 2px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  position: relative;
+  transition: border-color 0.3s, padding-left 0.3s;
+}
+.fact:hover { border-left-color: var(--accent); padding-left: 26px; }
+.fact .k {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.fact .v {
+  font-size: 17px;
+  color: var(--fg);
+  line-height: 1.35;
+}
+.fact .v em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.1em;
+  color: var(--accent);
+  letter-spacing: -0.005em;
+}
+
+/* ====== Stats — HUD-style readout grid ====== */
+.stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+}
+.stat {
+  padding: 48px 32px 44px;
+  border-right: 1px solid var(--line);
+  position: relative;
+  transition: background 0.4s ease;
+}
+.stat:last-child { border-right: none; }
+.stat:hover { background: rgba(204, 224, 70, 0.04); }
+/* tiny corner brackets — AR HUD detail */
+.stat::before, .stat::after {
+  content: ""; position: absolute;
+  width: 10px; height: 10px;
+  border: 1px solid var(--accent);
+  opacity: 0; transition: opacity 0.4s;
+}
+.stat::before { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+.stat::after  { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+.stat:hover::before, .stat:hover::after { opacity: 0.6; }
+
+.stat-tag {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 22px;
+}
+.stat .num {
+  font-family: var(--font-display);
+  font-size: clamp(64px, 7.5vw, 104px);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+  color: var(--fg);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.stat .num .unit {
+  font-family: var(--font-display);
+  font-size: 0.34em;
+  font-weight: 600;
+  font-stretch: 90%;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+  margin-left: 4px;
+}
+/* thin accent rule under each number */
+.stat .num::after {
+  /* drawn separately to keep flex layout — see ::after on .stat */
+}
+.stat .label {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+.stat .label em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--accent);
+  font-size: 17px;
+  letter-spacing: -0.005em;
+}
+
+/* ====== Timeline ====== */
+.timeline { display: grid; gap: 0; }
+.job {
+  display: grid; grid-template-columns: 260px 1fr; gap: 64px;
+  padding: 52px 0 52px 16px;
+  border-top: 1px solid var(--line);
+  position: relative;
+  transition: padding-left 0.4s ease, background 0.4s ease;
+}
+.job::before {
+  content: ""; position: absolute;
+  left: 0; top: 52px; bottom: 52px;
+  width: 2px; background: var(--accent);
+  opacity: 0; transition: opacity 0.4s ease, width 0.4s ease;
+}
+.job:hover { padding-left: 28px; }
+.job:hover::before { opacity: 1; }
+.job:first-child { border-top: none; }
+.job .meta { color: var(--muted); font-size: 14px; }
+.job .job-num {
+  /* Editorial chapter label — italic Fraunces in lime */
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  letter-spacing: -0.005em;
+  color: var(--accent);
+  font-weight: 400;
+  margin-bottom: 14px;
+  text-transform: none;
+}
+.job .company {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  font-stretch: 85%;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.job .dates {
+  display: block;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.job h3 {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  font-family: var(--font-display);
+  font-stretch: 85%;
+  line-height: 1.15;
+}
+.job .role {
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 19px;
+  margin-bottom: 22px;
+  letter-spacing: -0.005em;
+  font-weight: 400;
+  line-height: 1.3;
+}
+.job .role em {
+  color: var(--accent);
+  font-weight: 500;
+}
+.job ul { margin: 0; padding-left: 18px; color: var(--muted); }
+.job ul li { margin-bottom: 10px; line-height: 1.65; font-size: 16px; }
+
+/* ====== Projects — Hall-of-Fame style cards (Lando helmet grid) ====== */
+.projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.projects-grid { gap: 16px; }
+@media (max-width: 1080px) {
+  .projects { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== Project card — dominant visual area + small label below ===== */
+.proj-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elev);
+  color: var(--fg);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  /* angular clip — small notch on top-right */
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+  transition: filter 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.proj-card::after {
+  /* lime accent triangle in the clipped corner */
+  content: "";
+  position: absolute;
+  top: 0; right: 0;
+  width: 18px; height: 18px;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  z-index: 5;
+}
+.proj-card:hover { transform: translateY(-6px); filter: brightness(1.08); }
+.proj-card:hover .pc-visual img,
+.proj-card:hover .pc-graphic { transform: scale(1.04); }
+
+.pc-visual {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #0a0c08;
+}
+.pc-visual img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(0.05) contrast(1.05);
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pc-year {
+  /* small label chip in the bottom-left of the visual area */
+  position: absolute;
+  bottom: 12px; left: 12px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--bg-dark);
+  background: var(--accent);
+  padding: 6px 12px 6px 10px;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  z-index: 4;
+}
+
+/* Generated visuals for cards that don't have a real screenshot.
+   .pc-visual-gen styles its inner .pc-graphic with a custom layout. */
+.pc-visual-gen {
+  background: linear-gradient(135deg, #1a1d14 0%, #0a0c08 100%);
+}
+.pc-graphic {
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  position: relative;
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Christmas gift list card: stacked giant words */
+.pc-graphic-gift {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.04em;
+  line-height: 0.85;
+  text-transform: uppercase;
+  color: var(--fg);
+  gap: 0;
+}
+.pc-gg-word { font-size: clamp(48px, 6vw, 96px); }
+.pc-gg-italic {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.015em;
+}
+/* "Open slot" / what's next card */
+.pc-graphic-soon {
+  color: var(--accent);
+}
+.pc-gs-mark {
+  font-family: var(--font-display);
+  font-size: clamp(80px, 10vw, 160px);
+  font-weight: 300;
+  line-height: 0.8;
+  margin-bottom: 12px;
+}
+.pc-gs-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.pc-meta {
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pc-title {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 1.6vw, 26px);
+  font-weight: 700;
+  font-stretch: 85%;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin: 0;
+  color: var(--fg);
+}
+.pc-title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  font-size: 1.08em;
+  letter-spacing: -0.005em;
+}
+.pc-tag {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Override projects-section light theme so cards stay dark even on cream
+   bg — the helmets pattern always uses dark cards. */
+.theme-light .proj-card { background: #15170f; color: #f1ede0; }
+.theme-light .pc-title { color: #f1ede0; }
+.theme-light .pc-tag { color: #8c8b7a; }
+.project {
+  display: block;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg-elev);
+  padding: 32px 32px 80px;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.4s, color 0.4s;
+  position: relative; overflow: hidden;
+  min-height: 280px;
+}
+.project::before {
+  content: ""; position: absolute; inset: 0;
+  background: var(--accent);
+  transform: translateX(0);
+  transform-origin: right center;
+  transition: transform 1.05s cubic-bezier(0.7, 0, 0.2, 1);
+  z-index: 3;
+  pointer-events: none;
+}
+.project.in::before { transform: translateX(101%); }
+.project:nth-child(2).in::before { transition-delay: 0.12s; }
+.project:nth-child(3).in::before { transition-delay: 0.24s; }
+.project > * { position: relative; z-index: 1; }
+.project::after {
+  content: "→"; position: absolute; top: 28px; right: 28px;
+  font-size: 22px; color: var(--accent);
+  transition: transform 0.4s;
+}
+.project:hover { transform: translateY(-6px); border-color: var(--accent); color: var(--fg); }
+.project:hover::after { transform: translate(6px, -6px); }
+.project h3 {
+  margin: 18px 0 12px;
+  font-size: clamp(22px, 1.9vw, 28px);
+  font-family: var(--font-display);
+  font-stretch: 85%;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.project h3 em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.06em;
+  color: var(--accent);
+  font-stretch: 100%;
+  letter-spacing: -0.005em;
+}
+.project p { color: var(--muted); margin: 0 0 20px; font-size: 16px; line-height: 1.55; }
+.project p em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.08em;
+  color: var(--fg);
+  letter-spacing: -0.005em;
+}
+.project .tag {
+  display: inline-block; font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--accent); font-weight: 600;
+  padding: 5px 12px; border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent-soft);
+}
+.project .url {
+  position: absolute; bottom: 28px; left: 32px; right: 32px;
+  color: var(--muted); font-size: 12px;
+  border-top: 1px solid var(--line); padding-top: 14px;
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+/* "Coming soon" placeholder card — dashed border + muted, but still hoverable */
+.project-soon {
+  border-style: dashed;
+  background: transparent;
+}
+.project-soon::after {
+  content: "+";
+  font-size: 28px;
+  font-weight: 300;
+}
+.project-soon:hover { background: var(--bg-elev); }
+.project-soon p em { color: var(--accent); }
+
+/* ====== Contact — light theme block, no AR brackets ====== */
+#contact { position: relative; padding: 160px 0 120px; }
+#contact .topo-bg { z-index: 0; opacity: 0.35; }
+.contact-block {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.cb-status {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--bg-dark);
+  background: var(--accent);
+  padding: 9px 18px 9px 14px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  margin-bottom: 36px;
+}
+.cb-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--bg-dark);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.cb-title {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 8vw, 128px);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+  text-transform: uppercase;
+  margin: 0 0 28px;
+  color: var(--fg);
+}
+.cb-title .cb-l1,
+.cb-title .cb-l2 { display: block; }
+.cb-title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.015em;
+}
+.cb-lead {
+  font-size: clamp(18px, 1.4vw, 22px);
+  color: var(--muted);
+  margin: 0 0 48px;
+  line-height: 1.55;
+  max-width: 56ch;
+}
+.cb-lead em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.08em;
+  color: var(--fg);
+}
+/* Contact rows: structured rows instead of pill buttons */
+.cb-rows { display: grid; gap: 2px; }
+.cb-row {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 20px;
+  background: var(--bg-elev);
+  text-decoration: none;
+  color: var(--fg);
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+  transition: filter 0.3s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cb-row::after {
+  /* small accent triangle in the clipped corner */
+  content: "";
+  position: absolute;
+  top: 0; right: 0;
+  width: 18px; height: 18px;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.cb-row:hover { transform: translateX(8px); filter: brightness(1.04); }
+.cb-row .cb-k {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  /* Darker on light theme for legibility — accent is decorative, not body */
+  color: var(--muted);
+}
+.cb-row .cb-v {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 1.8vw, 24px);
+  font-weight: 600;
+  font-stretch: 90%;
+  color: var(--fg);
+  letter-spacing: -0.015em;
+}
+.cb-row .cb-v em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.1em;
+  color: var(--accent);
+  letter-spacing: -0.005em;
+}
+.cb-row .cb-arr {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--accent);
+  margin-right: 24px;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cb-row:hover .cb-arr { transform: translate(6px, -2px); }
+
+/* Coda on light theme: dark text on cream */
+.coda.theme-light { background: var(--bg-light); }
+.coda.theme-light .coda-text { color: var(--fg); }
+.coda.theme-light .coda-mark { color: var(--accent); }
+.coda.theme-light .coda-attrib { color: var(--muted); }
+.cc-status {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--bg-dark);
+  background: var(--accent);
+  padding: 10px 18px 10px 16px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  margin-bottom: 36px;
+  position: relative;
+}
+.cc-dot { background: var(--bg-dark) !important; box-shadow: none !important; }
+.cc-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.contact-card h2 {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 80px);
+  margin: 0 0 22px; letter-spacing: -0.035em;
+  position: relative;
+  font-weight: 800;
+  font-stretch: 80%;
+  line-height: 1;
+}
+.contact-card h2 .accent {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--accent);
+  font-stretch: 100%;
+}
+.contact-card p {
+  color: var(--muted);
+  margin: 0 0 40px;
+  font-size: 18px;
+  position: relative;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.contact-card p em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1em;
+  color: var(--accent);
+  letter-spacing: -0.005em;
+}
+.socials { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
+
+/* ====== Footer ====== */
+footer {
+  padding: 56px 0 48px;
+  color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line);
+  position: relative;
+}
+.footer-inner {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 24px;
+}
+.f-left { display: flex; flex-direction: column; gap: 6px; }
+.f-mark {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+.f-meta {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.f-meta em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.18em;
+  color: var(--accent);
+  letter-spacing: -0.005em;
+}
+.f-right { display: flex; align-items: center; gap: 24px; }
+.f-top {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--bg-dark);
+  background: var(--accent);
+  padding: 9px 18px 9px 14px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  transition: filter 0.3s ease;
+}
+.f-top:hover { filter: brightness(1.1); }
+.footer-inner .status {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.footer-inner .status .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 10px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ====== Reveal ====== */
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+/* Wipe-pattern elements ALWAYS render visible — only their yellow
+   overlay slides off. The .in class triggers the wipe via ::before/::after. */
+.stat-row.reveal,
+.job.reveal,
+.project.reveal,
+.partner.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================
+   EDITORIAL LAYER — big-headline pattern, head-to-head split,
+   partners strip, table-style stat rows, yellow-fade transitions.
+   Used across the site to replace the "01 // SECTION" pattern.
+   ============================================================ */
+
+/* Big editorial headline: bold sans + italic serif accents, often stacked
+   over 2-3 lines and intentionally OVERLAPPING with the line above. */
+.big-headline {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 11vw, 168px);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.045em;
+  line-height: 0.86;
+  text-transform: uppercase;
+  margin: 0 0 56px;
+  color: var(--fg);
+}
+.big-headline em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.015em;
+  font-size: 1.06em;
+  line-height: 0.92;
+  /* Slight visual offset so the serif overlaps adjacent line */
+  display: inline-block;
+  margin-top: -0.04em;
+}
+.big-headline .hl-row {
+  display: block;
+}
+.big-headline .hl-tag {
+  display: inline-block;
+  vertical-align: super;
+  font-family: var(--font-display);
+  font-size: 0.08em;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-right: 18px;
+}
+
+/* Intro grid — used under big-headline. Body copy left, supporting data right. */
+.intro-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.intro-grid .lead {
+  font-size: clamp(18px, 1.5vw, 22px);
+  color: var(--muted);
+  line-height: 1.55;
+  max-width: 56ch;
+}
+.intro-grid .lead p { margin: 0 0 20px; }
+.intro-grid .lead p:last-child { margin-bottom: 0; }
+.intro-grid .lead em,
+.intro-grid .lead strong {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--fg);
+  font-size: 1.08em;
+  letter-spacing: -0.005em;
+}
+
+/* ===== "Currently" line — pulsing lime dot + supporting copy ===== */
+/* ===== Clipped-corner box utility (replaces pills) =====
+   Two layers: outer fill (accent) + inner offset cover (bg) creates
+   the angular 1px "border" with a diagonally-cut corner. */
+.now-line {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--bg-dark);
+  background: var(--accent);
+  padding: 10px 18px 10px 16px;
+  /* notch the top-right corner */
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  margin: 0 0 28px !important;
+}
+.now-line .now-dot {
+  display: inline-block;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--bg-dark);
+  margin-right: 10px;
+  vertical-align: middle;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.now-line em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.35em;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  color: var(--bg-dark);
+}
+.now-line .now-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.now-line em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.35em;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  color: var(--accent);
+}
+
+/* ===== Stat rows — table-style with yellow bar fills ===== */
+.stat-rows {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 24px;
+  align-items: baseline;
+  padding: 32px 16px 32px 0;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+  transition: padding-left 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.stat-row:hover { padding-left: 16px; }
+/* Yellow WIPE reveal — each row starts fully covered in lime and the
+   block slides off to the right when the row scrolls into view.
+   Cascades down rows via nth-child transition-delay. */
+.stat-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: translateX(0);
+  transform-origin: right center;
+  transition: transform 1.05s cubic-bezier(0.7, 0, 0.2, 1);
+  z-index: 3;
+  pointer-events: none;
+}
+.stat-row.in::before { transform: translateX(101%); }
+.stat-row:nth-child(2).in::before { transition-delay: 0.08s; }
+.stat-row:nth-child(3).in::before { transition-delay: 0.16s; }
+.stat-row:nth-child(4).in::before { transition-delay: 0.24s; }
+.stat-row:nth-child(5).in::before { transition-delay: 0.32s; }
+.stat-row > * { position: relative; z-index: 1; }
+.stat-row .sr-tag {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.stat-row .sr-num {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5.5vw, 80px);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: var(--fg);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.stat-row .sr-num .unit {
+  font-size: 0.38em;
+  font-weight: 600;
+  font-stretch: 90%;
+  color: var(--muted);
+  letter-spacing: 0;
+  margin-left: 2px;
+}
+.stat-row .sr-label {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.4vw, 19px);
+  font-weight: 500;
+  color: var(--fg);
+  max-width: 24ch;
+  text-align: right;
+  line-height: 1.3;
+}
+.stat-row .sr-label em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+  font-size: 1.1em;
+  letter-spacing: -0.005em;
+}
+
+/* ===== Head-to-head split (Work / Play) ===== */
+.hh-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  background: var(--bg-dark);
+  position: relative;
+  /* break out of container padding for full-bleed */
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  width: 100vw;
+}
+.hh-side {
+  position: relative;
+  height: 80vh;
+  min-height: 580px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  color: var(--fg);
+  text-decoration: none;
+  border: none;
+}
+.hh-side + .hh-side { border-left: 1px solid rgba(204, 224, 70, 0.2); }
+.hh-side > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  transition: transform 1.4s cubic-bezier(0.22, 1, 0.36, 1), filter 0.6s ease;
+  filter: grayscale(0.15) brightness(0.7);
+}
+.hh-side::after {
+  /* gradient scrim */
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(29,34,24,0.95) 0%, rgba(29,34,24,0.5) 35%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+.hh-content {
+  position: relative;
+  z-index: 2;
+  padding: 64px 56px;
+  width: 100%;
+}
+.hh-tag {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+.hh-title {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 8vw, 128px);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+  text-transform: uppercase;
+  color: var(--fg);
+  margin: 0 0 16px;
+}
+.hh-title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.015em;
+}
+.hh-side p {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 38ch;
+  line-height: 1.55;
+  margin: 0 0 24px;
+}
+.hh-side p em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--fg);
+  font-size: 1.08em;
+}
+.hh-cta {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: gap 0.4s ease;
+}
+.hh-side:hover > img {
+  transform: scale(1.06);
+  filter: grayscale(0) brightness(0.85);
+}
+.hh-side:hover .hh-cta { gap: 18px; }
+
+/* ===== Partners strip — infinite horizontal marquee ===== */
+.partners-strip {
+  position: relative;
+  padding: 24px 0 64px;
+  overflow: hidden;
+  /* break out of the container so the marquee runs full-bleed */
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+.partners-marquee {
+  overflow: hidden;
+  width: 100%;
+  /* fade the edges so partners enter/exit gracefully */
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+.partners-track {
+  display: flex;
+  gap: 64px;
+  align-items: center;
+  width: max-content;
+  animation: partnersMarquee 32s linear infinite;
+}
+.partners-strip:hover .partners-track { animation-play-state: paused; }
+@keyframes partnersMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.partner {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 85%;
+  font-size: clamp(28px, 3vw, 44px);
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+.partner.sep {
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-size: 0.7em;
+  letter-spacing: 0;
+}
+.partner:not(.sep):hover { color: var(--accent); }
+/* (Old wipe + hover-lift CSS removed — replaced by the marquee above) */
+.partner em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  letter-spacing: -0.005em;
+}
+/* Decorative lime script word laid OVER the partners strip — Lando style */
+.partners-overlay {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-4deg);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(80px, 16vw, 220px);
+  color: var(--accent);
+  opacity: 0.18;
+  white-space: nowrap;
+  pointer-events: none;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  z-index: 0;
+}
+
+/* ===== Stage scroll hint — short line above, "Scroll" label below.
+   Sits low on the hero; muted warm-gray so it reads as a quiet affordance,
+   not a dark mark over the portrait's neck. Fades as scroll progresses. */
+.scroll-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 12;
+  opacity: calc(0.85 - var(--p, 0) * 4);
+  pointer-events: none;
+}
+.scroll-hint .sh-line {
+  display: block;
+  width: 1px;
+  height: 22px;
+  background: linear-gradient(to bottom, transparent 0%, currentColor 40%, currentColor 100%);
+  color: var(--bg-dark);
+  animation: scrollHintPulse 1.8s ease-in-out infinite;
+}
+.scroll-hint .sh-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--bg-dark);
+}
+/* Once we cross into the dark phase, both pieces lift to a soft cream */
+.stage.dark .scroll-hint .sh-label,
+body.nav-on-dark .scroll-hint .sh-label { color: rgba(241, 237, 224, 0.6); }
+.stage.dark .scroll-hint .sh-line,
+body.nav-on-dark .scroll-hint .sh-line { color: rgba(241, 237, 224, 0.55); }
+@keyframes scrollHintPulse {
+  0%   { transform: scaleY(0.2); transform-origin: bottom; opacity: 0.5; }
+  40%  { transform: scaleY(1);   transform-origin: bottom; opacity: 1; }
+  60%  { transform: scaleY(1);   transform-origin: top;    opacity: 1; }
+  100% { transform: scaleY(0.2); transform-origin: top;    opacity: 0.5; }
+}
+
+/* ===== Sub-page hero: ON TRACK (dark) / OFF TRACK (light) treatments
+   Big photo flush to one side, giant editorial title on the other,
+   meta-data tags + content cards. No topo on these heroes. ===== */
+.page-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  min-height: 100vh;
+  padding: 0;
+  overflow: hidden;
+}
+.page-hero-dark {
+  background: var(--bg-dark);
+  color: var(--fg);
+}
+.page-hero-light {
+  background: var(--bg-light);
+  color: var(--bg-dark);
+}
+.page-hero .ph-photo {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+.page-hero .ph-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  /* contain (not cover) — the portrait PNG has transparency around the
+     figure, so contain keeps the head fully visible and bottom-anchors
+     the chest so empty space sits at the top, not awkwardly mid-frame */
+  object-fit: contain;
+  object-position: center bottom;
+  filter: grayscale(0.05) contrast(1.02);
+}
+/* On projects page (.ph-photo on the right), keep contain + bottom but
+   the photo isn't a transparent cutout — use cover */
+.page-hero-light .ph-photo img {
+  object-fit: cover;
+  object-position: center 30%;
+}
+/* Soft fade where the photo meets the content side */
+.page-hero-dark .ph-photo::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: 30%;
+  background: linear-gradient(to right, transparent, var(--bg-dark));
+  pointer-events: none;
+}
+.page-hero-light .ph-photo::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 30%;
+  background: linear-gradient(to left, transparent, var(--bg-light));
+  pointer-events: none;
+}
+.page-hero .ph-content {
+  position: relative;
+  padding: 140px 64px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.page-hero .ph-content-left { padding-left: 80px; }
+
+.ph-top-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.ph-tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--bg-dark);
+  background: var(--accent);
+  padding: 8px 16px 8px 12px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+.ph-tag em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.3em;
+  color: var(--bg-dark);
+  text-transform: none;
+  letter-spacing: -0.005em;
+  margin-left: 4px;
+}
+
+.ph-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 80%;
+  font-size: clamp(72px, 11vw, 168px);
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  margin: 0 0 36px;
+  color: var(--fg);
+}
+.page-hero-light .ph-title { color: var(--bg-dark); }
+.ph-title .ph-l1,
+.ph-title .ph-l2 {
+  display: block;
+}
+.ph-title .ph-l1 em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.015em;
+  /* slight visual offset so the italic word feels like a swoop above the bold */
+  display: inline-block;
+  margin-bottom: -0.06em;
+}
+
+.ph-lead {
+  font-size: clamp(18px, 1.5vw, 22px);
+  color: var(--muted);
+  max-width: 52ch;
+  line-height: 1.55;
+  margin: 0 0 40px;
+}
+.page-hero-light .ph-lead { color: #44483a; }
+.ph-lead em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.08em;
+  color: var(--fg);
+  letter-spacing: -0.005em;
+}
+.page-hero-light .ph-lead em { color: var(--bg-dark); }
+
+/* Sharp content cards — like Lando's RND.T/PD chips. No rounded corners,
+   clipped top-right corner with a small lime accent triangle filling it. */
+.ph-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.ph-card {
+  position: relative;
+  background: var(--bg-elev);
+  padding: 22px 18px 18px;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  transition: filter 0.3s ease;
+}
+.ph-card::after {
+  /* small lime triangle in the clipped corner — pops the angular cut */
+  content: "";
+  position: absolute;
+  top: 0; right: 0;
+  width: 14px; height: 14px;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.ph-card:hover { filter: brightness(1.15); }
+.page-hero-light .ph-card {
+  background: var(--bg-elev);
+}
+.ph-card-k {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.ph-card-v {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  font-stretch: 90%;
+  color: var(--fg);
+  letter-spacing: -0.005em;
+  line-height: 1.25;
+}
+.page-hero-light .ph-card-v { color: var(--bg-dark); }
+.ph-card-v em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.18em;
+  color: var(--accent);
+  letter-spacing: -0.005em;
+}
+
+/* Yellow WIPE reveal on .job rows — same pattern as stat-rows.
+   Block covers the row, slides right off on scroll-into-view. */
+.job::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: translateX(0);
+  transform-origin: right center;
+  transition: transform 1.05s cubic-bezier(0.7, 0, 0.2, 1);
+  z-index: 3;
+  pointer-events: none;
+}
+.job.in::after { transform: translateX(101%); }
+.job:nth-child(2).in::after { transition-delay: 0.08s; }
+.job:nth-child(3).in::after { transition-delay: 0.16s; }
+.job:nth-child(4).in::after { transition-delay: 0.24s; }
+.job:nth-child(5).in::after { transition-delay: 0.32s; }
+.job:nth-child(6).in::after { transition-delay: 0.40s; }
+.job:nth-child(7).in::after { transition-delay: 0.48s; }
+.job > * { position: relative; z-index: 1; }
+
+/* ===== Horizontal scroll — pinned section, inner track translates X
+   as user scrolls Y. Creative break in the vertical flow. ===== */
+.hscroll {
+  position: relative;
+  /* 4 panels => ~400vh runway (each panel ≈ 1 vh of vertical scroll) */
+  height: 400vh;
+  background: var(--bg-dark);
+  overflow: visible;
+  padding: 0;
+}
+.hscroll-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+}
+.hscroll-intro {
+  position: absolute;
+  top: 64px;
+  left: 64px;
+  z-index: 5;
+  max-width: 480px;
+  pointer-events: none;
+}
+.hsi-tag {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.hsi-title {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 7vw, 96px);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+  color: var(--fg);
+}
+.hsi-title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.015em;
+}
+.hsi-sub {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0;
+  opacity: 0.6;
+}
+
+.hscroll-track {
+  display: flex;
+  height: 100vh;
+  /* width set by content; transform driven by JS */
+  will-change: transform;
+}
+.hscroll-panel {
+  flex-shrink: 0;
+  width: 100vw;
+  height: 100vh;
+  padding: 200px 64px 80px calc(50vw - 100px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  border-right: 1px solid var(--line);
+}
+.hscroll-panel:last-child { border-right: none; }
+.hp-num {
+  font-family: var(--font-display);
+  font-size: clamp(80px, 14vw, 200px);
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--accent);
+  text-stroke: 1.5px var(--accent);
+  margin-bottom: 24px;
+}
+.hp-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  margin: 0 0 24px;
+  color: var(--fg);
+  max-width: 14ch;
+}
+.hp-title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.015em;
+}
+.hp-body {
+  font-family: var(--font-sans);
+  font-size: clamp(16px, 1.3vw, 20px);
+  color: var(--muted);
+  line-height: 1.55;
+  max-width: 44ch;
+  margin: 0;
+}
+
+/* ===== Coda — closing manifesto quote ===== */
+.coda { padding: 140px 0 80px; }
+.coda-quote {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 24px;
+}
+.coda-mark {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--accent);
+  font-size: clamp(120px, 16vw, 220px);
+  line-height: 0.6;
+  margin: 0 0 -10px;
+  opacity: 0.7;
+}
+.coda-text {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5.5vw, 88px);
+  font-weight: 800;
+  font-stretch: 80%;
+  letter-spacing: -0.035em;
+  line-height: 0.96;
+  text-transform: uppercase;
+  margin: 0 0 32px;
+  color: var(--fg);
+}
+.coda-text em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 100%;
+  color: var(--accent);
+  text-transform: none;
+  letter-spacing: -0.015em;
+}
+.coda-attrib {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Yellow lift — kept as a subtle bottom-edge accent transitioning into
+   the dark footer */
+.yellow-lift {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 140px;
+  background: linear-gradient(to top, var(--accent) 0%, rgba(216, 255, 38, 0.2) 40%, transparent 100%);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ====== Body em accent color override ======
+   On dark sections --accent-body = --accent (punchy lime, no change).
+   On .theme-light sections --accent-body = warm muted gray (#757062),
+   so italic Fraunces accents inside body PARAGRAPHS read as a quiet
+   highlight, not a bright pop. The big editorial type (.big-headline,
+   .hh-title, .cb-title, .coda-text, .hp-title, .ph-title, .hsi-title,
+   .pc-title) keeps the punchy lime via direct --accent reference and
+   is intentionally NOT in this list. */
+.about-grid p em,
+.intro-grid .lead em,
+.hero .tagline em,
+.fact .v em,
+.stat .label em,
+.stat-row .sr-label em,
+.job .role em,
+.project h3 em,
+.project p em,
+.cb-row .cb-v em,
+.cb-lead em,
+.contact-card p em,
+.f-meta em,
+.ph-card-v em,
+.page-hero .ph-lead em,
+.hh-side p em,
+.hp-body em,
+.pc-tag em {
+  color: var(--accent-body);
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 900px) {
+  /* Compact nav on mobile so the lockup + links fit comfortably */
+  .nav-inner { padding: 20px 20px 0; }
+  .nav-brand .b-1 { font-size: 26px; }
+  .nav-brand .b-2 { font-size: 14px; letter-spacing: 0.05em; }
+  .nav-links { gap: 14px; margin-top: 4px; }
+  .nav-links a { font-size: 10px; letter-spacing: 0.14em; }
+  .about-grid { grid-template-columns: 1fr; gap: 40px; }
+  .projects { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(2) { border-right: none; }
+  .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid var(--line); }
+  /* Editorial layer responsive */
+  .big-headline { font-size: clamp(44px, 14vw, 88px); margin-bottom: 36px; }
+  .intro-grid { grid-template-columns: 1fr; gap: 40px; }
+  .stat-row { grid-template-columns: 60px 1fr; }
+  .stat-row .sr-label { grid-column: 2; text-align: left; font-size: 15px; }
+  .stat-row .sr-num { grid-column: 1 / span 2; font-size: clamp(48px, 14vw, 80px); }
+  .hh-split { grid-template-columns: 1fr; }
+  .hh-side { height: 65vh; min-height: 460px; }
+  .hh-side + .hh-side { border-left: none; border-top: 1px solid rgba(204, 224, 70, 0.2); }
+  .hh-content { padding: 40px 28px; }
+  .partners-track { gap: 36px; }
+  /* Page heroes collapse: photo on top, content below */
+  .page-hero { grid-template-columns: 1fr; min-height: auto; }
+  .page-hero .ph-photo { height: 50vh; }
+  .page-hero .ph-content { padding: 60px 24px; }
+  .page-hero .ph-content-left { padding-left: 24px; }
+  .page-hero-dark .ph-photo::after,
+  .page-hero-light .ph-photo::after { display: none; }
+  .ph-cards { grid-template-columns: 1fr; }
+  .job { grid-template-columns: 1fr; gap: 12px; padding: 28px 0; }
+  .hero { padding: 60px 0 40px; }
+  .hero-split { grid-template-columns: 1fr; gap: 40px; }
+  .hero-photo { aspect-ratio: 4 / 5; max-width: 440px; margin: 0 auto; }
+  section { padding: 80px 0; }
+  .contact-card { padding: 48px 24px; }
+  .project .url { position: static; margin-top: 16px; }
+}
