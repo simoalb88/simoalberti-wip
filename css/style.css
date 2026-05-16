@@ -521,7 +521,11 @@ body.nav-on-dark .nav-links .nav-disabled { color: rgba(235, 231, 212, 0.35); }
 }
 .stage-pin {
   position: sticky; top: 0;
+  /* dvh = dynamic viewport height — adjusts smoothly as the mobile URL bar
+     collapses/expands, so the tile always fills exactly the visible area
+     instead of being half-hidden behind the URL bar. Falls back to vh. */
   height: 100vh;
+  height: 100dvh;
   overflow: visible;
   z-index: 10;
 }
@@ -766,6 +770,57 @@ body.nav-on-dark .nav-links .nav-disabled { color: rgba(235, 231, 212, 0.35); }
     right:  calc(var(--p) * 4vw);
   }
   .stage-text { font-size: 28px; width: 92vw; left: 4vw; transform: translateY(0); top: auto; bottom: 60px; }
+}
+
+/* === Portrait phones: bigger portrait + better end-state composition ===
+   In tall portrait aspect ratios (most phones), the cqmin-driven frame
+   shrinks proportionally to viewport width — leaving the portrait small
+   and floating low. Here we:
+     1) Size the frame by container HEIGHT instead of min-axis, so the
+        face stays prominent. Sides/shoulders crop off-screen if needed
+        (overflow:hidden on .stage-scale clips cleanly).
+     2) Re-balance the end-state: push the shrunken tile DOWN with more
+        headroom above, less gap below, and grow the manifesto text. */
+@media (orientation: portrait) and (max-width: 900px) {
+  .frame {
+    /* Height-driven sizing so portrait fills the viewport vertically.
+       cqh = container query height = the tile's current height. */
+    width: auto;
+    height: 95cqh;
+    aspect-ratio: 1122 / 1402;        /* match the image's natural aspect */
+    max-width: none;                   /* allow horizontal crop */
+    max-height: none;
+  }
+  .frame-inner img {
+    /* Now image renders to fill its frame (which is height-sized).
+       No more extending below the frame — the frame IS the image bounds. */
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+  /* Wireframe glasses scale with the (height-driven) frame — track the
+     eye position which sits ~42% above the tile bottom at this sizing. */
+  .wf-glasses {
+    width: 38cqh;
+    bottom: 42cqh;
+  }
+
+  /* End-state re-balance: tile smaller, lower, more text below. */
+  .stage-scale {
+    top:    calc(var(--p) * 16vh);   /* big headroom above the tile */
+    bottom: calc(var(--p) * 34vh);   /* tile sits in upper-middle area */
+    left:   calc(var(--p) * 12vw);
+    right:  calc(var(--p) * 12vw);
+  }
+  .stage-text {
+    font-size: clamp(30px, 7.6vw, 44px);
+    line-height: 1.04;
+    width: 92vw;
+    left: 4vw;
+    top: auto;
+    transform: translateY(0);
+    bottom: 6vh;
+  }
 }
 .manifesto-pin {
   position: sticky; top: 0;
