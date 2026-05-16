@@ -783,26 +783,22 @@ body.nav-on-dark .nav-links .nav-disabled { color: rgba(235, 231, 212, 0.35); }
         headroom above, less gap below, and grow the manifesto text. */
 @media (orientation: portrait) and (max-width: 900px) {
   .frame {
-    /* Height-driven sizing so portrait fills the viewport vertically.
-       cqh = container query height = the tile's current height. */
-    width: auto;
-    height: 95cqh;
-    aspect-ratio: 1122 / 1402;        /* match the image's natural aspect */
-    max-width: none;                   /* allow horizontal crop */
+    /* Oversize the frame relative to tile WIDTH so the portrait fills the
+       viewport vertically. Keep the SAME aspect-ratio as desktop (1400/1239)
+       so the image is cropped at the shoulders, NOT showing more chest.
+       The natural-aspect <img> still extends past the frame's bottom and
+       gets clipped by .stage-scale's overflow:hidden — same trick as
+       desktop, just at a larger size. */
+    width: 140cqw;
+    aspect-ratio: 1400 / 1239;
+    max-width: none;
     max-height: none;
   }
-  .frame-inner img {
-    /* Now image renders to fill its frame (which is height-sized).
-       No more extending below the frame — the frame IS the image bounds. */
-    width: 100%; height: 100%;
-    object-fit: cover;
-    object-position: center top;
-  }
-  /* Wireframe glasses scale with the (height-driven) frame — track the
-     eye position which sits ~42% above the tile bottom at this sizing. */
+  /* Wireframe glasses: width ~ 30% of frame width = 42cqw.
+     Eye-line at ~38% above tile bottom at this sizing. */
   .wf-glasses {
-    width: 38cqh;
-    bottom: 42cqh;
+    width: 42cqw;
+    bottom: 38cqh;
   }
 
   /* End-state re-balance: tile smaller, lower, more text below. */
