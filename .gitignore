@@ -4,3 +4,7 @@ Thumbs.db
 node_modules/
 .vscode/
 .idea/
+
+# Local-only experimental playground — not deployed
+topo-tests/
+.claude/
