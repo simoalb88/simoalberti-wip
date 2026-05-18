@@ -1,0 +1,98 @@
+/* Test page chrome — minimal frame around each topo variant.
+   Cream background = same as the Stage's light tile (--bg-light-warm). */
+:root {
+  --bg: #ede8d8;
+  --topo-color: #cce046;
+  --ink: #1d2218;
+  --muted: rgba(29, 34, 24, 0.45);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  position: relative;
+}
+
+/* Topo layer fills the whole viewport, sits behind everything */
+.topo {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.topo svg, .topo canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Small label in top-left so we know which test we're looking at */
+.label {
+  position: fixed;
+  top: 22px; left: 28px;
+  z-index: 10;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink);
+  pointer-events: auto;
+}
+.label .sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Top-right navigation between tests */
+.tabs {
+  position: fixed;
+  top: 22px; right: 28px;
+  z-index: 10;
+  display: flex;
+  gap: 16px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.tabs a {
+  color: var(--muted);
+  text-decoration: none;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.tabs a:hover { color: var(--ink); }
+.tabs a.active {
+  color: var(--ink);
+  border-bottom-color: var(--topo-color);
+}
+
+/* Optional center hint to test how the topo reads behind a focal point */
+.center-mark {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  width: 280px;
+  text-align: center;
+  pointer-events: none;
+}
+.center-mark .ring {
+  width: 220px;
+  height: 220px;
+  border: 1px dashed rgba(29, 34, 24, 0.18);
+  border-radius: 50%;
+  margin: 0 auto 20px;
+}
+.center-mark .txt {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

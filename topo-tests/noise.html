@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Topo · Noise field</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="topo"><canvas id="cv"></canvas></div>
+
+  <div class="center-mark">
+    <div class="ring"></div>
+    <div class="txt">Focal point reference</div>
+  </div>
+
+  <div class="label">
+    01 / Generative
+    <span class="sub">Noise-field topography · marching squares</span>
+  </div>
+
+  <nav class="tabs">
+    <a href="index.html">Gallery</a>
+    <a href="noise.html" class="active">Noise</a>
+    <a href="reactive.html">Reactive</a>
+    <a href="parallax.html">Parallax</a>
+  </nav>
+
+<script>
+/* ============================================================
+   Generative topography via marching squares on a noise field.
+
+   How it works:
+   1. Sample a smooth 2D value-noise field on a grid (sample one
+      slice of a 3D field; the 3rd axis is TIME so the terrain
+      morphs slowly).
+   2. For each grid cell, run marching squares: look at the four
+      corner values vs. a contour threshold. The configuration
+      (0–15) tells us which edges of the cell the contour crosses;
+      linearly interpolate the crossing positions for smooth lines.
+   3. Draw multiple thresholds (5–7) to get nested contour rings
+      like a real topographic map.
+   ============================================================ */
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+let W = 0, H = 0, dpr = 1;
+function resize() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = cv.clientWidth = window.innerWidth;
+  H = cv.clientHeight = window.innerHeight;
+  cv.width = W * dpr;
+  cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* --- Value noise (cheap, smooth enough for topo) ---
+   Hash → pseudo-random value at integer grid points, then
+   bilinearly interpolate within a cell using smoothstep. */
+function hash3(x, y, z) {
+  let h = x * 374761393 + y * 668265263 + z * 1274126177;
+  h = (h ^ (h >> 13)) * 1274126177;
+  h = (h ^ (h >> 16)) >>> 0;
+  return (h / 4294967295) * 2 - 1;   // [-1, 1]
+}
+function smooth(t) { return t * t * (3 - 2 * t); }
+
+function noise3(x, y, z) {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  const xf = x - xi,        yf = y - yi,        zf = z - zi;
+  const u = smooth(xf), v = smooth(yf), w = smooth(zf);
+
+  const n000 = hash3(xi,   yi,   zi);
+  const n100 = hash3(xi+1, yi,   zi);
+  const n010 = hash3(xi,   yi+1, zi);
+  const n110 = hash3(xi+1, yi+1, zi);
+  const n001 = hash3(xi,   yi,   zi+1);
+  const n101 = hash3(xi+1, yi,   zi+1);
+  const n011 = hash3(xi,   yi+1, zi+1);
+  const n111 = hash3(xi+1, yi+1, zi+1);
+
+  const x00 = n000 + u * (n100 - n000);
+  const x10 = n010 + u * (n110 - n010);
+  const x01 = n001 + u * (n101 - n001);
+  const x11 = n011 + u * (n111 - n011);
+  const y0 = x00 + v * (x10 - x00);
+  const y1 = x01 + v * (x11 - x01);
+  return y0 + w * (y1 - y0);
+}
+
+/* Layered noise (fBm) — gives a more terrain-like field
+   than a single octave (rolling hills + finer detail). */
+function fbm(x, y, z) {
+  let amp = 1, freq = 1, sum = 0, norm = 0;
+  for (let i = 0; i < 4; i++) {
+    sum  += amp * noise3(x * freq, y * freq, z * freq);
+    norm += amp;
+    amp  *= 0.5;
+    freq *= 2.0;
+  }
+  return sum / norm;
+}
+
+/* --- Marching squares lookup ---
+   Each 4-corner config (16 possibilities) maps to a list of
+   edge pairs to connect. Edges are numbered 0..3 going
+   top, right, bottom, left. */
+const MS = [
+  [],                       // 0000
+  [[3, 0]],                 // 0001
+  [[0, 1]],                 // 0010
+  [[3, 1]],                 // 0011
+  [[1, 2]],                 // 0100
+  [[3, 0], [1, 2]],         // 0101 (ambiguous)
+  [[0, 2]],                 // 0110
+  [[3, 2]],                 // 0111
+  [[2, 3]],                 // 1000
+  [[2, 0]],                 // 1001
+  [[0, 1], [2, 3]],         // 1010 (ambiguous)
+  [[2, 1]],                 // 1011
+  [[1, 3]],                 // 1100
+  [[1, 0]],                 // 1101
+  [[0, 3]],                 // 1110
+  []                        // 1111
+];
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+/* Given a cell at (gx, gy) in grid coords and the corner values,
+   return the (x, y) of the contour crossing on edge `e`. */
+function edgePoint(e, gx, gy, v00, v10, v11, v01, thr, cellPx) {
+  const x0 = gx * cellPx, y0 = gy * cellPx;
+  const x1 = x0 + cellPx,  y1 = y0 + cellPx;
+  let t;
+  switch (e) {
+    case 0: t = (thr - v00) / (v10 - v00); return [lerp(x0, x1, t), y0];
+    case 1: t = (thr - v10) / (v11 - v10); return [x1, lerp(y0, y1, t)];
+    case 2: t = (thr - v01) / (v11 - v01); return [lerp(x0, x1, t), y1];
+    case 3: t = (thr - v00) / (v01 - v00); return [x0, lerp(y0, y1, t)];
+  }
+}
+
+/* --- Draw all contours for the current time --- */
+const CELL_PX = 18;            // grid cell size in CSS pixels
+const NOISE_SCALE = 0.0032;    // smaller = wider rolling features
+/* More thresholds clustered near zero where fbm spends most of its
+   range — gives a dense canvas of contour lines instead of a few
+   wide bands. 13 levels evenly spaced across the typical [-0.6, 0.6]
+   output range of 4-octave value noise. */
+const THRESHOLDS = [-0.55, -0.45, -0.35, -0.25, -0.15, -0.05, 0.05, 0.15, 0.25, 0.35, 0.45, 0.55];
+const TOPO_COLOR = '#cce046';
+
+function draw(timeMs) {
+  ctx.clearRect(0, 0, W, H);
+
+  const cols = Math.ceil(W / CELL_PX) + 1;
+  const rows = Math.ceil(H / CELL_PX) + 1;
+
+  // z slice through 3D noise: very slow drift = soft tectonic morph
+  const z = timeMs * 0.00006;
+
+  // Pre-sample the noise field once on the grid corners.
+  const field = new Float32Array((cols + 1) * (rows + 1));
+  for (let j = 0; j <= rows; j++) {
+    for (let i = 0; i <= cols; i++) {
+      field[j * (cols + 1) + i] = fbm(i * CELL_PX * NOISE_SCALE,
+                                      j * CELL_PX * NOISE_SCALE,
+                                      z);
+    }
+  }
+
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = TOPO_COLOR;
+  ctx.lineCap = 'round';
+
+  for (let ti = 0; ti < THRESHOLDS.length; ti++) {
+    const thr = THRESHOLDS[ti];
+
+    // Mid-thresholds slightly punchier than edges — feels like the
+    // "main ridge lines" pop a bit more than the periphery.
+    const distFromMid = Math.abs(ti - (THRESHOLDS.length - 1) / 2);
+    ctx.globalAlpha = 0.50 - distFromMid * 0.035;
+
+    ctx.beginPath();
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        const v00 = field[j * (cols + 1) + i];
+        const v10 = field[j * (cols + 1) + i + 1];
+        const v11 = field[(j + 1) * (cols + 1) + i + 1];
+        const v01 = field[(j + 1) * (cols + 1) + i];
+
+        let key = 0;
+        if (v00 > thr) key |= 1;
+        if (v10 > thr) key |= 2;
+        if (v11 > thr) key |= 4;
+        if (v01 > thr) key |= 8;
+
+        const segs = MS[key];
+        for (let s = 0; s < segs.length; s++) {
+          const [a, b] = segs[s];
+          const [ax, ay] = edgePoint(a, i, j, v00, v10, v11, v01, thr, CELL_PX);
+          const [bx, by] = edgePoint(b, i, j, v00, v10, v11, v01, thr, CELL_PX);
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(bx, by);
+        }
+      }
+    }
+    ctx.stroke();
+  }
+}
+
+function loop(t) {
+  draw(t);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

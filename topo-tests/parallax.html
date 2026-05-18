@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Topo · Parallax composition</title>
+  <link rel="stylesheet" href="shared.css" />
+  <style>
+    /* Three parallax depth layers. Each gets a slow drift via CSS,
+       a mouse-tracked offset via JS, and its own opacity. */
+    .layer {
+      position: absolute; inset: 0;
+      will-change: transform;
+      transform: translate3d(0,0,0);
+    }
+    .layer svg { width: 100%; height: 100%; display: block; }
+    .layer path { fill: none; stroke: var(--topo-color); stroke-linejoin: round; }
+
+    /* Back layer: smallest features, softest, drifts the slowest */
+    .layer.back  { opacity: 0.22; animation: drift-back  60s ease-in-out infinite alternate; }
+    .layer.mid   { opacity: 0.38; animation: drift-mid   42s ease-in-out infinite alternate; }
+    .layer.fore  { opacity: 0.62; animation: drift-fore  30s ease-in-out infinite alternate; }
+
+    .layer.back  path { stroke-width: 0.8; }
+    .layer.mid   path { stroke-width: 1.0; }
+    .layer.fore  path { stroke-width: 1.2; }
+
+    /* Slow ambient drift baked into CSS — JS adds the mouse offset on top */
+    @keyframes drift-back { from { transform: translate3d(-12px, -8px, 0); }
+                              to { transform: translate3d( 14px,  6px, 0); } }
+    @keyframes drift-mid  { from { transform: translate3d( 18px, -14px, 0); }
+                              to { transform: translate3d(-20px,  10px, 0); } }
+    @keyframes drift-fore { from { transform: translate3d(-22px,  16px, 0); }
+                              to { transform: translate3d( 26px, -12px, 0); } }
+  </style>
+</head>
+<body>
+  <div class="topo" id="topo">
+    <div class="layer back" id="back"></div>
+    <div class="layer mid"  id="mid"></div>
+    <div class="layer fore" id="fore"></div>
+  </div>
+
+  <div class="center-mark">
+    <div class="ring"></div>
+    <div class="txt">Move the cursor for parallax</div>
+  </div>
+
+  <div class="label">
+    03 / Composed
+    <span class="sub">Single composition · 3-layer parallax</span>
+  </div>
+
+  <nav class="tabs">
+    <a href="index.html">Gallery</a>
+    <a href="noise.html">Noise</a>
+    <a href="reactive.html">Reactive</a>
+    <a href="parallax.html" class="active">Parallax</a>
+  </nav>
+
+<script>
+/* ============================================================
+   Single asymmetric topo composition rendered at 3 depths.
+
+   The composition is ONE intentionally-placed topo feature:
+   an off-center ridge running diagonally with a secondary
+   smaller peak. Each "layer" renders the same composition at
+   a slightly different scale and offset — so the three layers
+   *complement* each other visually (a real designed scene)
+   rather than tiling a pattern.
+
+   Each layer also moves at a different rate when the cursor
+   moves, giving real depth.
+   ============================================================ */
+
+const VB = { w: 1600, h: 1000 };
+
+/* Build a single contour as an irregular closed path made of many
+   Bezier-smoothed points around a centerline. */
+function buildContour(cx, cy, baseR, harmonics, seed) {
+  // Sample around centroid with harmonic distortion (no symmetry).
+  const N = 220;
+  const pts = [];
+  for (let i = 0; i < N; i++) {
+    const theta = (i / N) * Math.PI * 2;
+    let r = baseR;
+    for (const h of harmonics) {
+      r += baseR * h.a * Math.sin(theta * h.k + h.p);
+    }
+    pts.push([cx + Math.cos(theta) * r, cy + Math.sin(theta) * r]);
+  }
+  return toSmoothPath(pts);
+}
+
+/* Catmull-Rom-ish smoothing → SVG path d string */
+function toSmoothPath(pts) {
+  const n = pts.length;
+  let d = `M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n];
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % n];
+    const p3 = pts[(i + 2) % n];
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d + ' Z';
+}
+
+/* The composition: a primary ridge anchored toward the right
+   third, and a softer secondary feature toward the lower-left.
+   Returns an SVG markup string with all contour paths. */
+function buildComposition(scale, shiftX, shiftY) {
+  const peaks = [
+    { cx: 1100 + shiftX, cy: 480 + shiftY, base: 90 * scale, rings: 11, step: 95 * scale,
+      harms: [
+        { k: 3, a: 0.14, p: 1.2 },
+        { k: 5, a: 0.08, p: 0.4 },
+        { k: 2, a: 0.06, p: 2.4 },
+      ] },
+    { cx: 340 + shiftX, cy: 760 + shiftY, base: 70 * scale, rings: 6, step: 80 * scale,
+      harms: [
+        { k: 4, a: 0.18, p: 2.1 },
+        { k: 2, a: 0.10, p: 0.6 },
+      ] },
+  ];
+
+  let svg = `<svg viewBox="0 0 ${VB.w} ${VB.h}" preserveAspectRatio="xMidYMid slice">`;
+  for (const peak of peaks) {
+    for (let r = 0; r < peak.rings; r++) {
+      const radius = peak.base + r * peak.step;
+      svg += `<path d="${buildContour(peak.cx, peak.cy, radius, peak.harms, 0)}"/>`;
+    }
+  }
+  return svg + '</svg>';
+}
+
+/* Each layer renders the SAME composition but at a slightly
+   different scale + offset, so they read as complementary
+   depth slices of one scene rather than three copies. */
+document.getElementById('back').innerHTML = buildComposition(1.18,  40, -30);
+document.getElementById('mid').innerHTML  = buildComposition(1.00,   0,   0);
+document.getElementById('fore').innerHTML = buildComposition(0.84, -50,  30);
+
+/* Mouse parallax — each layer at a different rate. The CSS
+   animations stay in play; this writes to CSS variables that
+   the layers add on top. */
+const back = document.getElementById('back');
+const mid  = document.getElementById('mid');
+const fore = document.getElementById('fore');
+
+let mx = 0, my = 0, tx = 0, ty = 0;
+window.addEventListener('mousemove', e => {
+  mx = (e.clientX / window.innerWidth  - 0.5) * 2;   // -1..1
+  my = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+function tick() {
+  tx += (mx - tx) * 0.08;
+  ty += (my - ty) * 0.08;
+  back.style.setProperty('--px', (tx *  6).toFixed(2) + 'px');
+  back.style.setProperty('--py', (ty *  6).toFixed(2) + 'px');
+  mid.style.setProperty ('--px', (tx * 14).toFixed(2) + 'px');
+  mid.style.setProperty ('--py', (ty * 14).toFixed(2) + 'px');
+  fore.style.setProperty('--px', (tx * 24).toFixed(2) + 'px');
+  fore.style.setProperty('--py', (ty * 24).toFixed(2) + 'px');
+  requestAnimationFrame(tick);
+}
+tick();
+</script>
+
+<style>
+  /* Apply the JS-driven parallax offset on top of the CSS drift via
+     a child wrapper, so the CSS animation owns `transform` cleanly. */
+  .layer svg { transform: translate3d(var(--px, 0), var(--py, 0), 0); }
+</style>
+</body>
+</html>
