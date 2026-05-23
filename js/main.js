@@ -207,8 +207,16 @@ if (heroPhoto) {
     if (Math.abs(tyTarget - ty) < 0.01)  ty = tyTarget;
 
     stage.style.setProperty("--p", p.toFixed(4));
-    frame.style.setProperty("--tilt-x", tx.toFixed(2) + "deg");
-    frame.style.setProperty("--tilt-y", ty.toFixed(2) + "deg");
+    /* Tilt vars are set on the stage-pin (the common ancestor of .frame
+       and .wf) so both the portrait AND the wireframe glasses can read
+       them — the glasses then mirror the same tilt + parallax to feel
+       attached to the face. */
+    pin.style.setProperty("--tilt-x", tx.toFixed(2) + "deg");
+    pin.style.setProperty("--tilt-y", ty.toFixed(2) + "deg");
+    /* Unitless mirrors of the tilt — usable with calc() * px for parallax /
+       sheen translations (you can't multiply deg by px). */
+    pin.style.setProperty("--tilt-xn", tx.toFixed(2));
+    pin.style.setProperty("--tilt-yn", ty.toFixed(2));
 
     // Past 55% progress: stage enters dark phase (manifesto reveals).
     // Nav color is handled by the global tracker below, not here.

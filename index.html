@@ -4,16 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#1d2218" />
-  <title>Simo Alberti — Work in Progress</title>
-  <meta name="description" content="Ambitious Product Design Engineering leader fueled by optimism and a healthy disregard for the impossible. Site in progress." />
+  <title>Simo Alberti — Product Design Engineering Leader</title>
+  <meta name="description" content="Ambitious Product Design Engineering leader fueled by optimism and a healthy disregard for the impossible." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=71" />
+  <link rel="stylesheet" href="css/style.css?v=123" />
   <style>
     /* Canvas-driven water topo for the Stage. Fills the .topo-bg div
        which lives inside .stage-scale and scales with the tile. */
-    .stage .topo-bg canvas {
+    .stage .topo-bg canvas,
+    #contact .topo-bg canvas {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -43,15 +44,13 @@
 
   <nav class="nav">
     <div class="container nav-inner">
-      <a class="nav-brand" href="#top">
+      <a class="nav-brand" href="index.html">
         <span class="b-1">SIMO</span>
         <span class="b-2">Alberti</span>
       </a>
       <div class="nav-links">
-        <a href="#top" class="active">Home</a>
-        <span class="nav-disabled">Work</span>
-        <span class="nav-disabled">Projects</span>
-        <span class="nav-disabled">Contact</span>
+        <a href="index.html" class="active">Home</a>
+        <a href="#contact">Contact</a>
       </div>
     </div>
   </nav>
@@ -59,6 +58,8 @@
   <!-- STAGE: the whole scene scales down as one tile, anchored left -->
   <section class="stage" aria-label="Hero">
     <div class="stage-pin" id="stagePin">
+      <!-- Everything inside .stage-scale is the "tile": cream bg, topo,
+           portrait, wireframe. It scales as one unit. -->
       <div class="stage-scale" id="stageScale">
         <div class="stage-bg" aria-hidden="true"></div>
 
@@ -68,7 +69,7 @@
 
         <div class="frame" id="frame">
           <div class="frame-inner">
-            <img src="img/simo-portrait-v2.png" alt="Simo Alberti — portrait in navy tuxedo" />
+            <img src="img/simo-portrait-v3.png" alt="Simo Alberti — portrait in navy tuxedo" />
           </div>
         </div>
 
@@ -77,11 +78,13 @@
         </div>
       </div>
 
+      <!-- Subtle scroll affordance on the hero -->
       <div class="scroll-hint" aria-hidden="true">
         <span class="sh-line"></span>
         <span class="sh-label">Scroll</span>
       </div>
 
+      <!-- Manifesto sits OUTSIDE the scaling tile, in the dark area to the right -->
       <div class="stage-text" id="stageText">
         <span class="w hl">AMBITIOUS</span> <span class="w">PRODUCT</span> <span class="w">DESIGN</span>
         <span class="w">ENGINEERING</span> <span class="w">LEADER,</span>
@@ -93,24 +96,205 @@
     </div>
   </section>
 
-  <!-- WIP — replaces the rest of the site for now -->
+  <!-- ABOUT — light section as a creative breather between Stage and the rest -->
   <section id="about" class="theme-light">
     <div class="container">
       <h3 class="big-headline reveal">
-        <span class="hl-row">Work</span>
-        <span class="hl-row"><em>in</em></span>
-        <span class="hl-row">progress.</span>
+        <span class="hl-row">Designing the</span>
+        <span class="hl-row"><em>improbable</em></span>
+        <span class="hl-row">since 2014.</span>
       </h3>
+      <div class="intro-grid">
+        <div class="lead reveal">
+          <p class="now-line">
+            <span class="now-dot"></span>
+            <span>Currently designing <em>AI wearables</em> at Meta Reality Labs.</span>
+          </p>
+          <p>
+            I'm a <strong>product design engineering leader</strong> based in San Francisco.
+            For the past decade I've designed and shipped hardware that people actually use —
+            from <em>flow batteries</em> to <em>electric scooters</em> to the next generation
+            of <em>AI wearables</em> at <em>Meta's Reality Labs</em>.
+          </p>
+          <p>
+            I love the messy middle of hardware — the place where industrial design,
+            architecture, manufacturing, and business reality collide. My job is to make
+            ambitious products real: on a timeline, at a cost, at a quality bar that holds up.
+          </p>
+        </div>
+        <div class="facts reveal">
+          <div class="fact">
+            <div class="k">Currently</div>
+            <div class="v">Product Design Engineering Manager · <em>Meta Reality Labs</em></div>
+          </div>
+          <div class="fact">
+            <div class="k">Based in</div>
+            <div class="v">San Francisco, <em>CA</em></div>
+          </div>
+          <div class="fact">
+            <div class="k">Education</div>
+            <div class="v"><em>Cal Poly SLO</em> — MS Mechanical, BS Aerospace</div>
+          </div>
+          <div class="fact">
+            <div class="k">Languages</div>
+            <div class="v">English · <em>Italiano</em> (native)</div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <script src="js/main.js?v=17"></script>
+  <!-- PARTNERS strip with decorative lime overlay word -->
+  <section id="partners">
+    <div class="container">
+      <h3 class="big-headline reveal">
+        <span class="hl-row">Companies</span>
+        <span class="hl-row">&amp; <em>collaborators.</em></span>
+      </h3>
+      <div class="partners-strip reveal">
+        <div class="partners-overlay" aria-hidden="true">shipped&nbsp;with</div>
+        <!-- Infinite horizontal marquee — partners loop indefinitely.
+             Content is duplicated so the translate by -50% loops seamlessly. -->
+        <div class="partners-marquee">
+          <div class="partners-track">
+            <span class="partner partner--meta"    role="img" aria-label="Meta"></span>
+            <span class="partner partner--lime"    role="img" aria-label="Lime"></span>
+            <span class="partner partner--boosted" role="img" aria-label="Boosted"></span>
+            <span class="partner partner--primus"  role="img" aria-label="Primus Power"></span>
+            <span class="partner partner--calpoly" role="img" aria-label="Cal Poly"></span>
+            <!-- duplicate for seamless loop -->
+            <span class="partner partner--meta"    aria-hidden="true"></span>
+            <span class="partner partner--lime"    aria-hidden="true"></span>
+            <span class="partner partner--boosted" aria-hidden="true"></span>
+            <span class="partner partner--primus"  aria-hidden="true"></span>
+            <span class="partner partner--calpoly" aria-hidden="true"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- (Head-to-head Work/Play split removed — revisit later.) -->
+
+  <!-- Horizontal scroll: operating principles.
+       Pinned section that translates its inner track left as you scroll
+       down. Breaks the vertical flow with a creative horizontal moment. -->
+  <section class="hscroll" id="principles">
+    <div class="hscroll-pin">
+      <div class="hscroll-intro">
+        <span class="hsi-tag">— Operating principles</span>
+        <h3 class="hsi-title">How I <em>build.</em></h3>
+        <p class="hsi-sub">Scroll →</p>
+      </div>
+      <div class="hscroll-track" id="hscrollTrack">
+        <article class="hscroll-panel">
+          <div class="hp-num">01</div>
+          <h4 class="hp-title">Build for <em>production.</em></h4>
+          <p class="hp-body">Designs that survive contact with users, manufacturing, and reality. The whiteboard idea is the easy part — making it real, on a timeline, at a cost, is the job.</p>
+        </article>
+        <article class="hscroll-panel">
+          <div class="hp-num">02</div>
+          <h4 class="hp-title">Cut, don't <em>compromise.</em></h4>
+          <p class="hp-body">A smaller product that ships beats a bigger one that doesn't. The art is choosing what to drop without losing what makes it sing.</p>
+        </article>
+        <article class="hscroll-panel">
+          <div class="hp-num">03</div>
+          <h4 class="hp-title">Respect the <em>timeline.</em></h4>
+          <p class="hp-body">Time is the constraint that makes a product real. A perfect design that misses the window is a beautiful idea — nothing more.</p>
+        </article>
+        <article class="hscroll-panel">
+          <div class="hp-num">04</div>
+          <h4 class="hp-title">Heart over <em>headcount.</em></h4>
+          <p class="hp-body">A small obsessed team beats a big distracted one every time. Find the obsessed ones. Trust them. Get out of their way.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing manifesto — flips to LIGHT after the head-to-head for a clean break -->
+  <section id="coda" class="coda theme-light">
+    <div class="container">
+      <div class="coda-quote reveal">
+        <p class="coda-mark">“</p>
+        <p class="coda-text">
+          Hardware doesn't lie.<br/>
+          Build it <em>real</em>, on a timeline,<br/>
+          at a cost, with <em>heart</em>.
+        </p>
+        <p class="coda-attrib">— operating principle, since 2014.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT — light section. The dark card sits on top of a lime
+       gradient that fades up from the bottom of the section (visible
+       around/behind the card's chamfered corners). The card itself
+       has angular zig-zag corner cuts, with auxiliary status info
+       tucked into the top-left + bottom-left corners. -->
+  <section id="contact" class="theme-light">
+    <div class="container">
+      <div class="cc-card reveal">
+        <!-- Water topo as the card's interior background -->
+        <canvas id="contactTopo" class="cc-topo" aria-hidden="true"></canvas>
+
+        <!-- Main content -->
+        <div class="cc-content">
+          <h2 class="cc-title">
+            <span class="cc-l1">Let's build</span>
+            <span class="cc-l2"><em>something.</em></span>
+          </h2>
+
+          <p class="cc-lead">
+            Open to interesting hardware problems,<br/>
+            leadership conversations, and a good <em>coffee</em>.
+          </p>
+
+          <div class="cc-grid">
+            <div class="cc-col">
+              <div class="cc-col-tag">— Direct</div>
+              <a class="cc-link" href="mailto:simo.alb88@gmail.com">
+                <span class="cc-link-k">Email</span>
+                <span class="cc-link-v">simo.alb88@<em>gmail.com</em></span>
+                <span class="cc-link-arr">→</span>
+              </a>
+            </div>
+            <div class="cc-col">
+              <div class="cc-col-tag">— Follow</div>
+              <a class="cc-link" href="https://www.linkedin.com/in/simoalb88/" target="_blank" rel="noopener">
+                <span class="cc-link-k">LinkedIn</span>
+                <span class="cc-link-v">in/<em>simoalb88</em></span>
+                <span class="cc-link-arr">↗</span>
+              </a>
+              <a class="cc-link" href="https://www.instagram.com/_simoalb_/" target="_blank" rel="noopener">
+                <span class="cc-link-k">Instagram</span>
+                <span class="cc-link-v">@<em>_simoalb_</em></span>
+                <span class="cc-link-arr">↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meta strip sitting OUTSIDE the card, in the slim cream border.
+           The card's bottom edge has step-up notches above each side so
+           these lines feel "tucked under" the card. -->
+      <div class="cc-meta">
+        <span class="cc-meta-mark">
+          <span class="cm-1">SIMO</span><span class="cm-2">Alberti</span>
+        </span>
+        <span class="cc-meta-rights">© <span id="y"></span> · Built in <em>San Francisco</em> · Powered by <em>coffee</em></span>
+      </div>
+    </div>
+  </section>
+
+  <script>document.getElementById("y").textContent = new Date().getFullYear();</script>
+  <script src="js/main.js?v=19"></script>
 
   <!-- ============================================================
-       Stage water topo: canvas-rendered noise-field contours with a
-       scan-reveal pass synced to the wireframe radar animation.
-       Replaces the SVG #topo-a / #topo-b that buildTopo() used to
-       populate (those calls no-op now since the elements are gone).
+       Stage water topo — canvas-rendered noise-field contours.
+       Replaces the SVG #topo-a / #topo-b that buildTopo() previously
+       drew (those calls now no-op since the elements are gone).
+       Base layer only; no scan reveal, no cursor wake.
        ============================================================ -->
   <script>
   (() => {
@@ -118,9 +302,14 @@
     if (!cv) return;
     const ctx = cv.getContext('2d');
 
+    /* Offscreen used for the scan-reveal highlight pass: peak-width
+       contours are rendered onto it, then alpha-masked with a smooth
+       vertical gradient and composited onto the main canvas. */
     const offCv  = document.createElement('canvas');
     const offCtx = offCv.getContext('2d');
 
+    /* Resize-track: the canvas lives inside .stage-scale which shrinks
+       as you scroll. ResizeObserver keeps the backing buffer in sync. */
     let W = 0, H = 0, dpr = 1;
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -161,8 +350,8 @@
       return y0 + w * (y1 - y0);
     }
 
-    const FIELD_SCALE = 0.0035;
-    const FIELD_TIME  = 0.00009;
+    const FIELD_SCALE = 0.0035;       // feature size (smaller = wider waves)
+    const FIELD_TIME  = 0.00009;      // evolution rate (smaller = slower)
     function waterField(x, y, t) {
       const a1 = noise3(x*FIELD_SCALE,       y*FIELD_SCALE,       t*FIELD_TIME);
       const a2 = noise3(x*FIELD_SCALE*2.3,   y*FIELD_SCALE*2.3,   t*FIELD_TIME*1.4) * 0.45;
@@ -190,16 +379,19 @@
       }
     }
 
+    /* --- Render config --- */
     const CELL_PX          = 10;
     const THRESHOLDS       = [-0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9];
-    const TOPO_COLOR       = '#cce046';
-    const LINE_WIDTH_BASE  = 1;
-    const LINE_WIDTH_PEAK  = 2;
-    const BASE_ALPHA       = 0.40;
-    const PEAK_ALPHA_BOOST = 0.85;
+    const TOPO_COLOR       = '#c4dd1c';
+    const LINE_WIDTH_BASE  = 1;          // resting line thickness
+    const LINE_WIDTH_PEAK  = 2;          // line thickness inside the scan band (+1)
+    const BASE_ALPHA       = 0.40;       // resting line alpha
+    const PEAK_ALPHA_BOOST = 0.85;       // additive alpha at the scan leading edge
 
-    /* Sync scan to the wireframe's wfRadarScan CSS animation via the
-       Web Animations API — same clock = no drift. */
+    /* === Scan sync ===
+       Read the wireframe's `wfRadarScan` CSS animation directly via the
+       Web Animations API so the topo scan-reveal and the wf radar mask
+       are driven by the same clock (no drift possible). */
     const WF_MASK_TILE_VH   = 100;
     const WF_MASK_LEAD_FRAC = 0.99;
     const WF_MASK_TAIL_FRAC = 0.49;
@@ -220,7 +412,7 @@
       const tileH  = (WF_MASK_TILE_VH / 100) * vh;
       const deltaPx = phase * tileH;
       const leadPx  = WF_MASK_LEAD_FRAC * tileH;
-      return (deltaPx + leadPx) % tileH;
+      return (deltaPx + leadPx) % tileH;   // canvas-local Y (wf & canvas share inset:0 in .stage-scale)
     }
 
     function draw(timeMs) {
@@ -234,6 +426,8 @@
         }
       }
 
+      /* Build one Path2D per threshold (marching squares once, re-stroke
+         twice: thin base pass + thick scan-reveal pass). */
       const paths = [];
       for (let ti = 0; ti < THRESHOLDS.length; ti++) {
         const thr = THRESHOLDS[ti];
@@ -266,12 +460,14 @@
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      // Pass 1: base thin pass
+      /* --- Pass 1: base thin pass everywhere --- */
       ctx.lineWidth   = LINE_WIDTH_BASE;
       ctx.globalAlpha = BASE_ALPHA;
       for (const p of paths) ctx.stroke(p);
 
-      // Pass 2: scan-reveal (peak strokes + gradient mask)
+      /* --- Pass 2: scan-reveal — peak-width strokes alpha-masked with a
+         smooth vertical gradient at the wf scan position. Continuous
+         gradient = no banding. --- */
       const scanY = getWFScanY();
       if (scanY == null) return;
       const tailPx = WF_MASK_TAIL_FRAC * (WF_MASK_TILE_VH / 100) * window.innerHeight;
@@ -307,6 +503,141 @@
       ctx.drawImage(offCv, 0, 0, W, H);
     }
 
+    (function loop(t) { draw(t); requestAnimationFrame(loop); })(0);
+  })();
+  </script>
+
+  <!-- ============================================================
+       Contact water topo — same noise-field contours as the Stage
+       but base layer ONLY (no scan reveal — the scan effect only
+       reads as intentional on the dark Stage). Light theme, mellow
+       lime lines, slightly higher alpha to compensate for the
+       parent .topo-bg's 0.35 opacity.
+       ============================================================ -->
+  <script>
+  (() => {
+    const cv = document.getElementById('contactTopo');
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+
+    let W = 0, H = 0, dpr = 1;
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = cv.parentElement.getBoundingClientRect();
+      W = Math.max(1, Math.round(rect.width));
+      H = Math.max(1, Math.round(rect.height));
+      cv.style.width  = W + 'px';
+      cv.style.height = H + 'px';
+      cv.width  = W * dpr;
+      cv.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    new ResizeObserver(resize).observe(cv.parentElement);
+    resize();
+
+    /* Value noise (same hash + smoothstep as the Stage topo). */
+    function hash3(x, y, z) {
+      let h = x * 374761393 + y * 668265263 + z * 1274126177;
+      h = (h ^ (h >> 13)) * 1274126177;
+      h = (h ^ (h >> 16)) >>> 0;
+      return (h / 4294967295) * 2 - 1;
+    }
+    function smooth(t) { return t * t * (3 - 2 * t); }
+    function noise3(x, y, z) {
+      const xi=Math.floor(x), yi=Math.floor(y), zi=Math.floor(z);
+      const xf=x-xi, yf=y-yi, zf=z-zi;
+      const u=smooth(xf), v=smooth(yf), w=smooth(zf);
+      const n000=hash3(xi,yi,zi),       n100=hash3(xi+1,yi,zi);
+      const n010=hash3(xi,yi+1,zi),     n110=hash3(xi+1,yi+1,zi);
+      const n001=hash3(xi,yi,zi+1),     n101=hash3(xi+1,yi,zi+1);
+      const n011=hash3(xi,yi+1,zi+1),   n111=hash3(xi+1,yi+1,zi+1);
+      const x00=n000+u*(n100-n000), x10=n010+u*(n110-n010);
+      const x01=n001+u*(n101-n001), x11=n011+u*(n111-n011);
+      const y0=x00+v*(x10-x00),     y1=x01+v*(x11-x01);
+      return y0 + w * (y1 - y0);
+    }
+
+    const FIELD_SCALE = 0.0030;       // slightly wider features (the contact
+                                      // section is wider than the Stage tile)
+    const FIELD_TIME  = 0.00007;      // a touch slower — quiet background
+    function waterField(x, y, t) {
+      const a1 = noise3(x*FIELD_SCALE,       y*FIELD_SCALE,       t*FIELD_TIME);
+      const a2 = noise3(x*FIELD_SCALE*2.3,   y*FIELD_SCALE*2.3,   t*FIELD_TIME*1.4) * 0.45;
+      return ((a1 + a2) / 1.45) * 1.7;
+    }
+
+    const MS = [
+      [],
+      [[3,0]],[[0,1]],[[3,1]],
+      [[1,2]],[[3,0],[1,2]],[[0,2]],[[3,2]],
+      [[2,3]],[[2,0]],[[0,1],[2,3]],[[2,1]],
+      [[1,3]],[[1,0]],[[0,3]],[]
+    ];
+    function lerp(a,b,t){ return a + (b-a)*t; }
+    function edgePoint(e, gx, gy, v00, v10, v11, v01, thr, cellPx) {
+      const x0 = gx*cellPx, y0 = gy*cellPx;
+      const x1 = x0+cellPx,  y1 = y0+cellPx;
+      let t;
+      switch (e) {
+        case 0: t=(thr-v00)/(v10-v00); return [lerp(x0,x1,t), y0];
+        case 1: t=(thr-v10)/(v11-v10); return [x1, lerp(y0,y1,t)];
+        case 2: t=(thr-v01)/(v11-v01); return [lerp(x0,x1,t), y1];
+        case 3: t=(thr-v00)/(v01-v00); return [x0, lerp(y0,y1,t)];
+      }
+    }
+
+    const CELL_PX    = 12;            // slightly coarser than Stage (10) —
+                                      // background context, less detail needed
+    const THRESHOLDS = [-0.9, -0.6, -0.3, 0.0, 0.3, 0.6, 0.9];
+    const TOPO_COLOR = '#c4dd1c';
+    /* Higher contrast — matches the look the Stage topo has DURING the scan
+       reveal pass (LINE_WIDTH_PEAK + boosted alpha). The contact topo has
+       no scan animation, so we bake that level of contrast into the base. */
+    const LINE_WIDTH = 2;
+    const ALPHA      = 1.0;
+
+    function draw(timeMs) {
+      ctx.clearRect(0, 0, W, H);
+      const cols = Math.ceil(W / CELL_PX) + 1;
+      const rows = Math.ceil(H / CELL_PX) + 1;
+      const field = new Float32Array((cols + 1) * (rows + 1));
+      for (let j = 0; j <= rows; j++) {
+        for (let i = 0; i <= cols; i++) {
+          field[j*(cols+1)+i] = waterField(i*CELL_PX, j*CELL_PX, timeMs);
+        }
+      }
+      ctx.strokeStyle = TOPO_COLOR;
+      ctx.lineCap     = 'round';
+      ctx.lineJoin    = 'round';
+      ctx.lineWidth   = LINE_WIDTH;
+      ctx.globalAlpha = ALPHA;
+      for (let ti = 0; ti < THRESHOLDS.length; ti++) {
+        const thr = THRESHOLDS[ti];
+        ctx.beginPath();
+        for (let j = 0; j < rows; j++) {
+          for (let i = 0; i < cols; i++) {
+            const v00 = field[j*(cols+1)+i];
+            const v10 = field[j*(cols+1)+i+1];
+            const v11 = field[(j+1)*(cols+1)+i+1];
+            const v01 = field[(j+1)*(cols+1)+i];
+            let key = 0;
+            if (v00 > thr) key |= 1;
+            if (v10 > thr) key |= 2;
+            if (v11 > thr) key |= 4;
+            if (v01 > thr) key |= 8;
+            const segs = MS[key];
+            for (let s = 0; s < segs.length; s++) {
+              const [a, b] = segs[s];
+              const [ax, ay] = edgePoint(a, i, j, v00, v10, v11, v01, thr, CELL_PX);
+              const [bx, by] = edgePoint(b, i, j, v00, v10, v11, v01, thr, CELL_PX);
+              ctx.moveTo(ax, ay);
+              ctx.lineTo(bx, by);
+            }
+          }
+        }
+        ctx.stroke();
+      }
+    }
     (function loop(t) { draw(t); requestAnimationFrame(loop); })(0);
   })();
   </script>
