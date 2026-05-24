@@ -11,11 +11,11 @@
         font-family="Fraunces, 'Times New Roman', Georgia, serif"
         font-style="italic"
         font-weight="900"
-        font-size="58"
+        font-size="54"
         text-anchor="middle"
         fill="#15170f"
         stroke="#15170f"
-        stroke-width="4"
+        stroke-width="3"
         paint-order="stroke fill"
-        stroke-linejoin="round">S</text>
+        stroke-linejoin="round">S.</text>
 </svg>
