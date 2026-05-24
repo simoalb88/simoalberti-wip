@@ -10,6 +10,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=123" />
+  <style>
+    /* Stub pages don't ship the custom cursor JS, so restore the
+       native cursor (the main stylesheet hides it via cursor:none). */
+    body, a, button { cursor: auto !important; }
+    a, button { cursor: pointer !important; }
+  </style>
 </head>
 <body id="top">
   <div class="grain" aria-hidden="true"></div>
