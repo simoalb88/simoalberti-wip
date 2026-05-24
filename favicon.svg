@@ -3,11 +3,19 @@
   <rect width="64" height="64" rx="8" ry="8" fill="#d8ff26"/>
   <!-- Italic serif S, same family / style as the nav-brand "SIMO" mark.
        Fraunces is the primary; falls back to a system serif italic. -->
+  <!-- Browsers can't load Google Fonts inside an SVG favicon, so the
+       weight effectively clamps to whatever system serif italic ships.
+       We compensate by stroking the glyph in the same fill color to
+       thicken the strokes visibly. -->
   <text x="32" y="50"
         font-family="Fraunces, 'Times New Roman', Georgia, serif"
         font-style="italic"
-        font-weight="800"
+        font-weight="900"
         font-size="58"
         text-anchor="middle"
-        fill="#15170f">S</text>
+        fill="#15170f"
+        stroke="#15170f"
+        stroke-width="4"
+        paint-order="stroke fill"
+        stroke-linejoin="round">S</text>
 </svg>
