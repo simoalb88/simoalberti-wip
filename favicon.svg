@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Lime background — matches site accent (#d8ff26) -->
+  <rect width="64" height="64" rx="8" ry="8" fill="#d8ff26"/>
+  <!-- Italic serif S, same family / style as the nav-brand "SIMO" mark.
+       Fraunces is the primary; falls back to a system serif italic. -->
+  <text x="32" y="50"
+        font-family="Fraunces, 'Times New Roman', Georgia, serif"
+        font-style="italic"
+        font-weight="400"
+        font-size="58"
+        text-anchor="middle"
+        fill="#15170f">S</text>
+</svg>
