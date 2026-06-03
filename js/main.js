@@ -197,6 +197,53 @@ if (heroPhoto) {
   });
   pin.addEventListener("mouseleave", () => { txTarget = 0; tyTarget = 0; });
 
+  // === Touch devices: device-orientation drives tilt ===
+  // On a phone there's no cursor, so we read the gyro instead. First
+  // event sets the resting baseline; subsequent samples are deltas from
+  // it so the portrait sits flat when the phone is held normally and
+  // tilts as you rotate the device.
+  //
+  // iOS 13+ requires explicit permission via a user gesture — we ask
+  // on first touch. Android & older iOS get the listener attached
+  // directly. Non-touch devices (desktop) skip this whole block so the
+  // mouse tilt isn't fought by ambient laptop-accelerometer noise.
+  const isTouch = matchMedia && matchMedia("(pointer: coarse)").matches;
+  if (isTouch && typeof DeviceOrientationEvent !== "undefined") {
+    let baseBeta = null, baseGamma = null;
+    const ORIENT_GAIN = 0.4;     // 1° phone tilt → 0.4° card tilt
+    const ORIENT_DEADZONE = 1.5; // ignore micro-jitter near baseline (deg)
+
+    const onOrient = (e) => {
+      if (e.beta == null || e.gamma == null) return;
+      if (baseBeta == null) { baseBeta = e.beta; baseGamma = e.gamma; return; }
+      let dBeta  = e.beta  - baseBeta;
+      let dGamma = e.gamma - baseGamma;
+      if (Math.abs(dBeta)  < ORIENT_DEADZONE) dBeta  = 0;
+      if (Math.abs(dGamma) < ORIENT_DEADZONE) dGamma = 0;
+      const clamp = (v) => Math.max(-TILT_MAX, Math.min(TILT_MAX, v));
+      tyTarget = clamp(dGamma * ORIENT_GAIN);  // left-right tilt → Y rotation
+      txTarget = clamp(-dBeta * ORIENT_GAIN);  // front-back tilt → X rotation
+    };
+
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      // iOS 13+ — must be triggered by a user gesture.
+      const enable = () => {
+        DeviceOrientationEvent.requestPermission()
+          .then((state) => {
+            if (state === "granted") {
+              window.addEventListener("deviceorientation", onOrient, true);
+            }
+          })
+          .catch(() => { /* user declined — silent */ });
+        window.removeEventListener("touchstart", enable, true);
+      };
+      window.addEventListener("touchstart", enable, true);
+    } else {
+      // Android / older iOS — wire up directly.
+      window.addEventListener("deviceorientation", onOrient, true);
+    }
+  }
+
   // Single rAF loop drives both scale + tilt with lerp momentum.
   const tick = () => {
     p  += (pTarget  - p)  * P_LERP;

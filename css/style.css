@@ -726,18 +726,26 @@ body.nav-on-dark .nav-links a.active { color: #ebe7d4; }
    parallax = bigger shift. */
 .wf-glasses {
   position: absolute;
-  /* Track the bottom-anchored portrait. Eye position is roughly at
-     ~42cqh above the tile bottom on the rendered image. Using cqh
-     (same unit family as .frame) so the glasses stay locked to the
-     face across every aspect ratio. */
-  left: 50.8%;
+  /* Track the bottom-anchored portrait. The portrait .frame is
+     centered at left:50% with its size driven by container HEIGHT
+     (85cqh wide). Anchoring at left:50% with a small horizontal
+     offset in cqh keeps the glasses locked to the face regardless
+     of viewport WIDTH — earlier `left: 50.8%` drifted because 0.8%
+     of stage-width grew in pixels as the window widened, while the
+     portrait's width (driven by cqh) didn't.
+
+     Horizontal face offset (~1.3cqh ≈ 1.5% of frame width) accounts
+     for the face sitting slightly right of the image's geometric
+     center. Vertical anchor stays at 42cqh — eye line above the
+     tile bottom. */
+  left: 50%;
   top: auto;
   bottom: 42cqh;
   /* Chained transforms (read right-to-left for visual effect):
-       rotateY/X → perspective → centering offset → parallax shift */
+       rotateY/X → perspective → centering offset → parallax + face-offset */
   transform:
     translate(
-      calc(var(--tilt-yn, 0) * 2.5px),
+      calc(var(--tilt-yn, 0) * 2.5px + 1.3cqh),
       calc(var(--tilt-xn, 0) * -2.5px)
     )
     translate(-50%, 50%)
@@ -1735,6 +1743,106 @@ section {
 @media (max-width: 760px) {
   .cc-grid { grid-template-columns: 1fr; gap: 40px; }
   .cc-link { grid-template-columns: 90px 1fr auto; gap: 14px; }
+}
+
+/* =============================================================
+   Inverted contact card — light card on dark section.
+   Used on pages that already live on a dark background (e.g.
+   work.html) so the page doesn't abruptly flip theme just to
+   host the contact card. Apply by adding `.contact-invert` to
+   the #contact section.
+   ============================================================= */
+#contact.contact-invert {
+  background: var(--bg-dark);
+}
+/* Replace the cream-bg lime halo with a softer, deeper lime glow
+   from below — still ties to the brand accent, but doesn't fight
+   the dark surroundings. */
+#contact.contact-invert::before {
+  background: linear-gradient(
+    to top,
+    rgba(216, 255, 38, 0.30) 0%,
+    rgba(216, 255, 38, 0.14) 22%,
+    rgba(216, 255, 38, 0.04) 48%,
+    rgba(216, 255, 38, 0)    70%
+  );
+}
+/* Card flips to cream; inside the card we adopt the same colour
+   tokens as the rest of the site's light-theme sections so the
+   typography reads identically (e.g. body em = muted warm gray,
+   big editorial em = punchy lime). The section around the card
+   stays on the default dark theme so the meta strip outside the
+   card matches the rest of the dark page. */
+.contact-invert .cc-card {
+  /* Local theme-light token overrides for the card's subtree.
+     Mirrors the light-theme palette documented in styleguide.html:
+       --fg          = #1a2118
+       --accent      = #c4dd1c   (mellow lime, light-theme variant)
+       --accent-body = #8a8c7e   (warm gray, for body em accents)
+  */
+  --bg: var(--bg-light);
+  --fg: #1a2118;
+  --accent: #c4dd1c;
+  --accent-body: #8a8c7e;
+  background: var(--bg-light);
+  color: var(--fg);
+}
+.contact-invert .cc-card .cc-topo {
+  /* Bump opacity — lime contours have less contrast on cream than
+     they do on near-black. */
+  opacity: 0.55;
+}
+.contact-invert .cc-title { color: var(--fg); }
+.contact-invert .cc-lead  { color: var(--fg); }
+
+/* Only the title em ("something.") gets the punchy lime accent. */
+.contact-invert .cc-title em { color: var(--accent); }
+
+/* Body paragraph em + handle em inside link values → muted warm gray
+   (--accent-body in light theme). */
+.contact-invert .cc-lead em,
+.contact-invert .cc-link-v em { color: var(--accent-body); }
+
+/* Arrows are not accents — same colour as the row text. */
+.contact-invert .cc-link-arr { color: var(--fg); opacity: 0.55; }
+.contact-invert .cc-link:hover .cc-link-arr { opacity: 1; }
+
+.contact-invert .cc-grid {
+  border-top-color: rgba(26, 33, 24, 0.14);
+}
+.contact-invert .cc-col-tag {
+  /* "— Direct" / "— Follow" section titles — standard text, no
+     accent / opacity dimming. */
+  color: var(--fg);
+  opacity: 1;
+}
+.contact-invert .cc-link {
+  color: var(--fg);
+  border-bottom-color: rgba(26, 33, 24, 0.10);
+}
+.contact-invert .cc-link:hover {
+  border-bottom-color: var(--accent);
+}
+.contact-invert .cc-link-k {
+  /* Email / LinkedIn / Instagram labels — standard text colour,
+     no accent / opacity dimming. */
+  color: var(--fg);
+  opacity: 1;
+}
+.contact-invert .cc-link-v { color: var(--fg); }
+
+/* Meta strip sits OUTSIDE the card on the DARK section bg, so the
+   colour treatment mirrors the home page exactly but inverted in
+   polarity: cream text on dark, with the lime em accents that the
+   home-page version uses for the rights line. */
+.contact-invert .cc-meta { color: var(--bg-light); }
+.contact-invert .cc-meta-mark { color: var(--bg-light); }
+.contact-invert .cc-meta-rights { color: var(--bg-light); opacity: 0.85; }
+.contact-invert .cc-meta-rights em { color: var(--accent); }
+.contact-invert .cc-meta-rights a { color: inherit; border-bottom-color: rgba(241, 237, 224, 0.4); }
+.contact-invert .cc-meta-rights a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 /* === Meta strip — sits OUTSIDE the card in the slim cream border.
